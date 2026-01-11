@@ -55,7 +55,8 @@
         special: "おすすめドリンク1杯サービス", 
         qrCode: "MusicBarEn_1",
         description: "音楽とお酒を楽しめる心地よい空間。前原の夜を彩るミュージックバーです。",
-        image: "https://images.unsplash.com/photo-1514525253361-bee8a19740c1?w=400"
+        // ご提示いただいた画像のURLを反映しました
+        image: "http://googleusercontent.com/image_generation_content/0"
       },
       { 
         id: "itoshima_2", 
@@ -129,7 +130,6 @@
       const addressLink = document.getElementById('detail-address-link');
       addressLink.innerText = "📍 " + shop.address;
       
-      // ピンポイント表示用の検索URL。店名と住所をセットで渡します。
       const query = encodeURIComponent(shop.name + " " + shop.address);
       addressLink.href = "https://www.google.com/maps/search/?api=1&query=" + query;
       
