@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>センベロ 2026 - コンプリート版</title>
+  <title>センベロ 2026 - スタンプラリー</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -30,7 +30,7 @@
       <div class="scan-line"></div>
     </div>
     <div class="mt-8 text-white text-center">
-      <h2 class="text-xl font-bold mb-2">QRをスキャン中...</h2>
+      <h2 class="text-xl font-bold mb-2">QRコードをスキャン中...</h2>
       <button onclick="closeScanner()" class="mt-6 bg-white text-black px-12 py-3 rounded-full font-bold shadow-lg">戻る</button>
     </div>
     <canvas id="canvas" hidden></canvas>
@@ -59,7 +59,6 @@
       accent_color: "#feca57"
     };
 
-    // 店舗データ（descriptionなどを自由に追加してください）
     const referenceShops = [
       { 
         id: "shop1", name: "居酒屋たぬき", address: "天神1-2-3", special: "生ビール300円", qrCode: "SHOP1_SECRET",
@@ -80,7 +79,6 @@
 
     let visitedShops = JSON.parse(localStorage.getItem('senbero_visited')) || [];
 
-    // --- カメラ機能 ---
     let videoStream = null;
     const video = document.getElementById('video');
     const canvasElement = document.getElementById('canvas');
@@ -95,7 +93,7 @@
         video.play();
         requestAnimationFrame(tick);
       } catch (err) {
-        alert("カメラの起動に失敗しました。");
+        alert("カメラの起動に失敗しました。ブラウザの設定でカメラを許可してください。");
         closeScanner();
       }
     }
@@ -131,7 +129,6 @@
           closeScanner();
           renderApp();
           
-          // コンプリート判定
           if (visitedShops.length === referenceShops.length) {
             celebrateComplete();
           } else {
@@ -143,7 +140,6 @@
       }
     }
 
-    // --- 詳細表示機能 ---
     function openDetail(shopId) {
       const shop = referenceShops.find(s => s.id === shopId);
       if (!shop) return;
@@ -151,7 +147,7 @@
       document.getElementById('detail-address').innerText = "📍 " + shop.address;
       document.getElementById('detail-special').innerText = shop.special;
       document.getElementById('detail-desc').innerText = shop.description || "お店の詳細情報は準備中です。";
-      document.getElementById('detail-image').style.backgroundImage = `url('${shop.image || 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400'}')`;
+      document.getElementById('detail-image').style.backgroundImage = `url('${shop.image}')`;
       document.getElementById('detail-modal').classList.remove('hidden');
     }
 
@@ -159,18 +155,15 @@
       document.getElementById('detail-modal').classList.add('hidden');
     }
 
-    // --- 演出機能 ---
     function celebrateComplete() {
       const duration = 5 * 1000;
       const animationEnd = Date.now() + duration;
       const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 5000 };
-
       function randomInRange(min, max) { return Math.random() * (max - min) + min; }
 
       const interval = setInterval(function() {
         const timeLeft = animationEnd - Date.now();
         if (timeLeft <= 0) return clearInterval(interval);
-
         const particleCount = 50 * (timeLeft / duration);
         confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
         confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
@@ -200,7 +193,7 @@
           </header>
 
           <div class="sticky top-4 z-50 mb-8 flex justify-center">
-            <button onclick="openScanner()" class="bg-[#ff6b6b] text-white text-xl font-bold px-10 py-5 rounded-full shadow-2xl active:scale-90 transition-transform flex items-center gap-3">
+            <button onclick="openScanner()" class="bg-[#ff6b6b] text-white text-xl font-bold px-8 py-5 rounded-full shadow-2xl active:scale-90 transition-transform flex items-center gap-3">
               <span class="text-2xl">📸</span> QRコードを読み取る
             </button>
           </div>
@@ -229,11 +222,11 @@
                         <span class="text-[10px] font-bold py-1 px-2 rounded-lg bg-red-50 text-[#ff6b6b] truncate max-w-[120px]">
                           ${shop.special}
                         </span>
-                        ${isVisited ? '<span class="text-[#ff6b6b] text-2xl font-black animate-bounce">✓</span>' : '<span class="text-gray-200 text-xs font-bold">DETAIL ≫</span>'}
+                        ${isVisited ? '<span class="text-[#ff6b6b] text-2xl font-black animate-bounce">✓</span>' : '<span class="text-gray-200 text-xs font-bold">詳細 ≫</span>'}
                       </div>
                     </div>
                   </div>
-                  ${isVisited ? `<button onclick="removeStamp('${shop.id}', event)" class="absolute top-2 right-4 text-[10px] text-gray-300 underline">削除</button>` : ''}
+                  ${isVisited ? `<button onclick="removeStamp('${shop.id}', event)" class="absolute top-2 right-4 text-[10px] text-gray-300 underline p-2">削除</button>` : ''}
                 </div>
               `;
             }).join('')}
