@@ -42,9 +42,11 @@
           <span>📞</span> お店に電話する
         </a>
         
-        <div class="bg-orange-50 p-4 rounded-xl mb-4 border border-orange-100 flex items-center gap-3">
-          <span class="text-2xl">🍴</span>
-          <p id="detail-food" class="font-bold text-lg text-[#ff6b6b] leading-tight"></p>
+        <div class="bg-orange-50 p-4 rounded-xl mb-4 border border-orange-100">
+          <p class="text-[10px] font-bold text-orange-400 mb-1 tracking-widest uppercase flex items-center gap-1">
+            <span>🍴</span> フード
+          </p>
+          <p id="detail-food" class="font-bold text-lg text-[#ff6b6b] leading-tight pl-4"></p>
         </div>
 
         <p id="detail-desc" class="text-sm leading-relaxed mb-6 text-gray-600"></p>
@@ -63,7 +65,7 @@
         tel: "092-332-9011",
         food: "おつまみ3種盛り合わせ", 
         qrCode: "MusicBarEn_1",
-        description: "音楽とお酒を楽しめる心地よい空間。前原の夜を彩るミュージックバーです。豊富なドリンクメニューと、厳選されたレコードの音色をお楽しみください。お一人様でもお気軽にお立ち寄りいただけるカウンター席もございます。",
+        description: "音楽とお酒を楽しめる心地よい空間。前原の夜を彩るミュージックバーです。豊富なドリンクメニューと、厳選されたレコードの音色をお楽しみください。",
         image: "en.jpg" 
       },
       { 
@@ -73,7 +75,7 @@
         tel: "092-324-1111", 
         food: "自家製ポテトサラダ & 乾き物", 
         qrCode: "RoseNoir_2",
-        description: "アットホームな雰囲気で、地元の方に愛されるスナックです。歌って笑って、糸島の夜を一緒に楽しみましょう。初めての方も大歓迎です！",
+        description: "アットホームな雰囲気で、地元の方に愛されるスナックです。歌って笑って、糸島の夜を一緒に楽しみましょう。",
         image: "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=400"
       },
       { 
@@ -83,7 +85,7 @@
         tel: "092-330-5000", 
         food: "糸島野菜のミニキッシュ", 
         qrCode: "Current_3",
-        description: "野北海岸を見渡す絶景カフェ＆レストラン。糸島の新鮮な食材をふんだんに使ったお料理を提供しています。波の音を聴きながら、贅沢なひとときをお過ごしください。",
+        description: "野北海岸を見渡す絶景カフェ＆レストラン。糸島の新鮮な食材をふんだんに使ったお料理を提供しています。",
         image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400"
       }
     ];
@@ -105,11 +107,14 @@
               <div class="flex-1 ml-4 pr-4">
                 <h3 class="font-black text-lg mb-1">${shop.name}</h3>
                 <p class="text-[10px] text-gray-400">${shop.address}</p>
-                <div class="flex justify-between items-center mt-2">
-                  <span class="text-[10px] bg-red-50 text-[#ff6b6b] px-2 py-1 rounded flex items-center gap-1">
-                    🍴 ${shop.food}
-                  </span>
-                  <span>${isVisited ? '✅' : '≫'}</span>
+                <div class="mt-2">
+                  <p class="text-[9px] text-orange-400 font-bold mb-0.5 flex items-center gap-1">
+                    <span>🍴</span> フード
+                  </p>
+                  <div class="flex justify-between items-center">
+                    <span class="text-xs font-bold text-[#ff6b6b] pl-3">${shop.food}</span>
+                    <span>${isVisited ? '✅' : '≫'}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -156,8 +161,6 @@
       document.getElementById('detail-desc').innerText = shop.description;
       document.getElementById('detail-image').style.backgroundImage = "url('" + shop.image + "')";
       document.getElementById('detail-modal').classList.remove('hidden');
-      
-      // モーダルを開いた時に一番上にスクロールさせる
       document.querySelector('#detail-modal > div').scrollTop = 0;
     }
 
