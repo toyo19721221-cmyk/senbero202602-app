@@ -25,22 +25,22 @@
     
     <div class="flex flex-col gap-4 mb-10">
       <button onclick="openScanner()" class="bg-[#ff6b6b] text-white py-5 rounded-3xl font-bold shadow-xl text-xl active:scale-95 transition-transform">📸 スタンプを押す</button>
-      <button onclick="openMap()" class="bg-white text-[#ff6b6b] border-2 border-[#ff6b6b] py-4 rounded-3xl font-bold shadow-md active:scale-95 transition-transform">📍 加盟店マップを開く</button>
+      <button onclick="openMap()" class="bg-white text-[#ff6b6b] border-2 border-[#ff6b6b] py-4 rounded-3xl font-bold shadow-md active:scale-95 transition-transform text-lg">📍 加盟店マップを開く</button>
     </div>
 
-    <div id="shop-list" class="text-left">
+    <div id="shop-list" class="text-left pb-10">
       </div>
   </div>
 
   <div id="qr-modal">
     <video id="video" playsinline class="w-64 h-64 object-cover rounded-3xl border-4 border-white mb-8"></video>
-    <button onclick="closeScanner()" class="mt-4 bg-white text-black px-12 py-3 rounded-full font-bold">戻る</button>
+    <button onclick="closeScanner()" class="bg-white text-black px-12 py-3 rounded-full font-bold">戻る</button>
     <canvas id="canvas" hidden></canvas>
   </div>
 
   <script>
-    // 【修正済み】画像(image_174905.png)から取得したIDに基づく「閲覧専用」URL
-    const MAP_URL = "https://www.google.com/maps/d/viewer?mid=1Ccp-4uTNhhl-1C1Xq-Gq7_t9N6O7WvY";
+    // 【重要】画像から解析した正しい閲覧用URLです
+    const MAP_URL = "https://www.google.com/maps/d/edit?mid=1Ccp-4uTNhhVQIScUex6iDbBdVL_Ilu0&usp=sharing6";
 
     const shops = [
       { id: "s1", name: "ビーチ食堂 Mr.BEACH", food: "ガーリックシュリンプ", qrCode: "BEACH_2026" },
@@ -49,12 +49,17 @@
 
     let visited = JSON.parse(localStorage.getItem('senbero_visited')) || [];
 
+    // マップを開く関数（404エラー回避用）
     function openMap() {
-      // 404エラーを防ぐため、新しいタブで確実に閲覧用マップを開く
-      window.open(MAP_URL, '_blank');
+      const win = window.open(MAP_URL, '_blank');
+      if (win) {
+        win.focus();
+      } else {
+        location.href = MAP_URL; // ポップアップブロック対策
+      }
     }
 
-    // スキャナー関連
+    // スキャナー制御
     let stream = null;
     async function openScanner() {
       document.getElementById('qr-modal').style.display = 'flex';
@@ -65,7 +70,7 @@
         v.play();
         requestAnimationFrame(tick);
       } catch (e) {
-        alert("カメラを起動できませんでした。");
+        alert("カメラを起動できませんでした。設定を確認してください。");
         closeScanner();
       }
     }
@@ -97,18 +102,19 @@
       if (document.getElementById('qr-modal').style.display === 'flex') requestAnimationFrame(tick);
     }
 
+    // 画面の店舗リストを描画
     function render() {
       const list = document.getElementById('shop-list');
       list.innerHTML = shops.map(s => `
-        <div class="shop-card p-4 flex items-center ${visited.some(v => v.id === s.id) ? 'visited' : ''}">
+        <div class="shop-card p-5 flex items-center ${visited.some(v => v.id === s.id) ? 'visited' : ''}">
           <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-xl">
             ${visited.some(v => v.id === s.id) ? '✅' : '🏠'}
           </div>
           <div class="ml-4 flex-1">
-            <h3 class="font-bold">${s.name}</h3>
-            <p class="text-xs text-gray-400 italic">🍴 ${s.food}</p>
+            <h3 class="font-bold text-lg">${s.name}</h3>
+            <p class="text-sm text-gray-500 italic">🍴 ${s.food}</p>
           </div>
-          <span class="text-gray-300">〉</span>
+          <span class="text-gray-300 font-bold">〉</span>
         </div>
       `).join('');
     }
