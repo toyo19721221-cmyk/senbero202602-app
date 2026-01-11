@@ -35,7 +35,7 @@
       <div id="detail-image" class="w-full h-48 bg-gray-200 bg-cover bg-center"></div>
       <div class="p-6">
         <h2 id="detail-name" class="text-2xl font-black mb-1"></h2>
-        <a id="detail-address-link" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-500 underline mb-4 block"></a>
+        <a id="detail-address-link" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-500 underline mb-4 block hover:text-blue-700 transition-colors"></a>
         <div class="bg-orange-50 p-4 rounded-xl mb-4 border border-orange-100">
           <p class="text-xs font-bold text-orange-400 mb-1 uppercase">センベロ特典</p>
           <p id="detail-special" class="font-bold text-lg text-[#ff6b6b]"></p>
@@ -59,12 +59,12 @@
       },
       { 
         id: "itoshima_2", 
-        name: "居酒屋 武蔵", 
-        address: "福岡県糸島市前原中央2-2-22", 
-        special: "ハイボール1杯 サービス", 
-        qrCode: "Musashi_2",
-        description: "筑前前原駅から徒歩スグ！活気あふれる店内です。",
-        image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400"
+        name: "スナック ローズノアール", 
+        address: "福岡県糸島市前原中央2-3-2", 
+        special: "おつまみ1品サービス", 
+        qrCode: "RoseNoir_2",
+        description: "アットホームな雰囲気で、地元の方に愛されるスナックです。楽しい夜を一緒に過ごしましょう。",
+        image: "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=400"
       },
       { 
         id: "itoshima_3", 
@@ -129,7 +129,7 @@
       const addressLink = document.getElementById('detail-address-link');
       addressLink.innerText = "📍 " + shop.address;
       
-      // ピンポイント表示用の公式検索URL（クエリに店名と住所を含めることで精度を高めています）
+      // ピンポイント表示用の検索URL。店名と住所をセットで渡します。
       const query = encodeURIComponent(shop.name + " " + shop.address);
       addressLink.href = "https://www.google.com/maps/search/?api=1&query=" + query;
       
