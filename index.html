@@ -29,4 +29,88 @@
 
   <div id="detail-modal" class="hidden fixed inset-0 z-[2000] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeDetail()">
     <div class="bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl" onclick="event.stopPropagation()">
-      <div id="detail-image" class="w-full h-4
+      <div id="detail-image" class="w-full h-48 bg-gray-200 bg-cover bg-center"></div>
+      <div class="p-6">
+        <h2 id="detail-name" class="text-2xl font-black mb-1"></h2>
+        <div class="flex items-center justify-between mb-4">
+          <p id="detail-address" class="text-sm text-gray-500"></p>
+          <a id="detail-tel-link" href="" class="bg-green-500 text-white p-3 rounded-full shadow-lg">📞</a>
+        </div>
+        <div class="bg-orange-50 p-4 rounded-xl mb-6 font-bold text-[#ff6b6b]" id="detail-food"></div>
+        <button onclick="closeDetail()" class="w-full bg-gray-100 py-4 rounded-2xl font-bold text-gray-500">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const config = {
+      // 画像から判別したマイマップIDを元に閲覧専用URLを作成
+      map_url: "https://www.google.com/maps/d/viewer?mid=1Ccp-4uTNhhl-1C1Xq-Gq7_t9N6O7WvY",
+      icon_image: "センベロ用アイコン.jpg"
+    };
+
+    const shops = [
+      { id: "s1", name: "ビーチ食堂 Mr.BEACH", address: "糸島市前原中央2-1-21", tel: "092-321-3118", food: "ガーリックシュリンプ", qrCode: "BEACH_2026", image: "https://images.unsplash.com/photo-1559740064-c6b367bd1918?w=400" },
+      { id: "s2", name: "SHIMA", address: "糸島市前原中央3-20-19", tel: "092-324-4168", food: "糸島野菜の天ぷら", qrCode: "SHIMA_2026", image: "https://images.unsplash.com/photo-1534422298391-e4f8c170db06?w=400" }
+    ];
+
+    let visited = JSON.parse(localStorage.getItem('senbero_visited')) || [];
+
+    function openMap() {
+      window.open(config.map_url, '_blank');
+    }
+
+    let stream = null;
+    async function openScanner() {
+      try {
+        document.getElementById('qr-modal').classList.remove('hidden');
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        const v = document.getElementById('video');
+        v.srcObject = stream; v.play();
+        requestAnimationFrame(tick);
+      } catch (e) { alert("カメラを許可してください"); closeScanner(); }
+    }
+
+    function closeScanner() {
+      document.getElementById('qr-modal').classList.add('hidden');
+      if (stream) stream.getTracks().forEach(t => t.stop());
+    }
+
+    function tick() {
+      const v = document.getElementById('video');
+      if (v.readyState === v.HAVE_ENOUGH_DATA) {
+        const c = document.getElementById('canvas');
+        c.height = v.videoHeight; c.width = v.videoWidth;
+        const ctx = c.getContext('2d');
+        ctx.drawImage(v, 0, 0, c.width, c.height);
+        const code = jsQR(ctx.getImageData(0,0,c.width,c.height).data, c.width, c.height);
+        if (code) {
+          const shop = shops.find(s => s.qrCode === code.data.trim());
+          if (shop && !visited.some(vs => vs.id === shop.id)) {
+            visited.push({ id: shop.id });
+            localStorage.setItem('senbero_visited', JSON.stringify(visited));
+            render();
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+          }
+          closeScanner(); return;
+        }
+      }
+      if (!document.getElementById('qr-modal').classList.contains('hidden')) requestAnimationFrame(tick);
+    }
+
+    function openDetail(id) {
+      const s = shops.find(x => x.id === id);
+      document.getElementById('detail-name').innerText = s.name;
+      document.getElementById('detail-address').innerText = "📍 " + s.address;
+      document.getElementById('detail-food').innerText = "🍴 " + s.food;
+      document.getElementById('detail-image').style.backgroundImage = `url('${s.image}')`;
+      document.getElementById('detail-tel-link').href = `tel:${s.tel.replace(/-/g,'')}`;
+      document.getElementById('detail-modal').classList.remove('hidden');
+    }
+
+    function closeDetail() { document.getElementById('detail-modal').classList.add('hidden'); }
+
+    function render() {
+      const app = document.getElementById('app');
+      app.innerHTML = `
+        <div class
