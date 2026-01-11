@@ -17,37 +17,27 @@
     .scan-line { position: absolute; width: 100%; height: 3px; background: #ff6b6b; top: 0; left: 0; animation: scan 2s linear infinite; }
     @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
     .progress-glow { box-shadow: 0 4px 20px rgba(255, 107, 107, 0.15); }
-    .address-text { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   </style>
 </head>
 <body class="h-full bg-[#fff5e6] text-[#2d3436]">
-  <div id="app" class="w-full h-full overflow-auto pb-40"></div>
+  <div id="app" class="w-full h-full overflow-auto pb-12"></div>
 
   <div id="qr-modal" class="hidden fixed inset-0 z-[3000] bg-black/90 flex flex-col items-center justify-center p-6 text-white">
     <div id="video-container" class="mb-6"><video id="video"></video><div class="scan-line"></div></div>
-    <p class="mb-4 font-bold">QRコードを枠内に収めてください</p>
-    <button onclick="closeScanner()" class="bg-white text-black px-12 py-3 rounded-full font-bold">戻る</button>
+    <p class="mb-4 font-bold text-lg">QRコード読み込み</p>
+    <button onclick="closeScanner()" class="bg-white text-black px-12 py-3 rounded-full font-bold">キャンセル</button>
     <canvas id="canvas" hidden></canvas>
   </div>
 
   <div id="guide-modal" class="hidden fixed inset-0 z-[4000] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeGuide()">
-    <div class="bg-white w-full max-w-sm max-h-[85vh] rounded-3xl overflow-y-auto p-8 shadow-2xl text-left" onclick="event.stopPropagation()">
+    <div class="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl" onclick="event.stopPropagation()">
       <h2 class="text-2xl font-black text-[#ff6b6b] mb-6 text-center">楽しみ方ガイド</h2>
-      <div class="space-y-5 text-sm">
-        <div class="flex gap-4">
-          <div class="bg-[#ff6b6b] text-white w-6 h-6 rounded-full flex items-center justify-center font-bold shrink-0">1</div>
-          <p>お店で<strong>「センベロセット」</strong>を注文！</p>
-        </div>
-        <div class="flex gap-4">
-          <div class="bg-[#ff6b6b] text-white w-6 h-6 rounded-full flex items-center justify-center font-bold shrink-0">2</div>
-          <p>店内の<strong>専用QRコード</strong>をこのアプリでスキャン。</p>
-        </div>
-        <div class="flex gap-4">
-          <div class="bg-[#ff6b6b] text-white w-6 h-6 rounded-full flex items-center justify-center font-bold shrink-0">3</div>
-          <p>スタンプが貯まると進捗率がアップ。<strong>25店舗コンプリート</strong>を目指そう！</p>
-        </div>
+      <div class="space-y-4 text-sm leading-relaxed">
+        <p>1. 加盟店でセンベロを注文</p>
+        <p>2. 店内の専用QRを読み込む</p>
+        <p>3. 全25店舗制覇を目指そう！</p>
       </div>
-      <button onclick="closeGuide()" class="w-full mt-8 bg-[#ff6b6b] text-white py-4 rounded-2xl font-bold">糸島を冒険する！</button>
+      <button onclick="closeGuide()" class="w-full mt-8 bg-[#ff6b6b] text-white py-4 rounded-2xl font-bold shadow-lg">閉じる</button>
     </div>
   </div>
 
@@ -59,11 +49,11 @@
         <h2 id="detail-name" class="text-2xl font-black mb-1 leading-tight"></h2>
         <a id="detail-address-link" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-500 underline mb-4 block break-all"></a>
         <a id="detail-tel-link" class="w-full bg-green-500 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 mb-4"><span>📞</span> お店に電話</a>
-        <div class="bg-orange-50 p-4 rounded-xl mb-4 border border-orange-100 text-left">
-          <p class="text-[10px] font-bold text-orange-400 mb-1 tracking-widest uppercase flex items-center gap-1"><span>🍴</span> フード</p>
+        <div class="bg-orange-50 p-4 rounded-xl mb-4 border border-orange-100">
+          <p class="text-[10px] font-bold text-orange-400 mb-1 uppercase"><span>🍴</span> フード</p>
           <p id="detail-food" class="font-bold text-lg text-[#ff6b6b] leading-tight"></p>
         </div>
-        <p id="detail-desc" class="text-sm leading-relaxed mb-6 text-gray-600 text-left"></p>
+        <p id="detail-desc" class="text-sm leading-relaxed mb-6 text-gray-600"></p>
         <button onclick="closeDetail()" class="w-full bg-gray-100 py-4 rounded-2xl font-bold text-gray-500">閉じる</button>
       </div>
     </div>
@@ -82,12 +72,12 @@
     const referenceShops = shopNames.map((name, i) => ({
       id: `shop_${i + 1}`,
       name: name,
-      address: name === "music bar en ミュージックバー エン/縁" ? "福岡県糸島市前原中央2-1-21" : "福岡県糸島市前原中央近辺",
+      address: "福岡県糸島市前原中央近辺",
       tel: "092-000-0000",
-      food: "センベロセット限定フード",
+      food: "期間限定おすすめメニュー",
       qrCode: `QR_${i + 1}`,
-      description: `${name}です。糸島の夜を盛り上げる自慢の料理とお酒を用意してお待ちしております！`,
-      image: `https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&q=80`
+      description: "糸島の夜を楽しむ素敵なお店です。自慢のセンベロフードをお楽しみください！",
+      image: i === 24 ? "en.jpg" : "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400"
     }));
 
     let visitedShops = JSON.parse(localStorage.getItem('senbero_visited')) || [];
@@ -101,17 +91,16 @@
       let shopListHtml = referenceShops.map(shop => {
         const isVisited = visitedShops.some(v => v.shop_id === shop.id);
         return `
-          <div onclick="openDetail('${shop.id}')" class="shop-card bg-white p-2.5 rounded-[1.8rem] shadow-md border-4 ${isVisited ? 'border-[#ff6b6b]' : 'border-white'} relative text-left h-full">
+          <div onclick="openDetail('${shop.id}')" class="shop-card bg-white p-3 rounded-[1.8rem] shadow-md border-4 ${isVisited ? 'border-[#ff6b6b]' : 'border-white'} relative text-left">
             <div class="flex items-center gap-3">
               <div class="w-14 h-14 rounded-xl bg-gray-100 bg-cover bg-center shrink-0" style="background-image:url('${shop.image}')"></div>
               <div class="flex-1 overflow-hidden">
                 <div class="flex justify-between items-start gap-1">
-                  <h3 class="font-black text-[13px] mb-0.5 leading-tight truncate">${shop.name}</h3>
-                  ${isVisited ? '<span class="text-[#ff6b6b] font-bold text-[8px] bg-red-50 px-1 py-0.5 rounded shrink-0">✓</span>' : ''}
+                  <h3 class="font-black text-[13px] leading-tight truncate flex-1">${shop.name}</h3>
+                  ${isVisited ? '<span class="text-[#ff6b6b] font-bold text-[8px] bg-red-50 px-1 py-0.5 rounded">✓</span>' : ''}
                 </div>
-                <p class="text-[9px] text-gray-400 address-text leading-tight">${shop.address}</p>
                 <div class="mt-1">
-                  <p class="text-[8px] text-orange-400 font-bold uppercase flex items-center gap-1"><span>🍴</span> フード</p>
+                  <p class="text-[8px] text-orange-400 font-bold uppercase"><span>🍴</span> フード</p>
                   <p class="text-[10px] font-bold text-[#ff6b6b] truncate">${shop.food}</p>
                 </div>
               </div>
@@ -121,25 +110,24 @@
       }).join('');
 
       app.innerHTML = `
-        <div class="max-w-3xl mx-auto p-4 md:p-8">
+        <div class="max-w-3xl mx-auto p-4">
           <header class="text-center my-6">
             <h1 class="text-3xl font-black text-[#ff6b6b] tracking-tighter">糸島センベロ 2026</h1>
-            <p class="text-[10px] text-orange-400 font-bold mt-1 tracking-[0.2em]">ITOSHIMA SENBERO STAMP RALLY</p>
           </header>
           
-          <div class="sticky top-4 z-[1000] bg-white/90 backdrop-blur-md p-5 rounded-[2rem] shadow-xl border border-white mb-8 progress-glow">
-            <div class="flex justify-between items-end mb-2 px-1">
+          <div class="sticky top-4 z-[1000] bg-white/95 backdrop-blur-md p-5 rounded-[2rem] shadow-xl border border-white mb-8 progress-glow">
+            <div class="flex justify-between items-center mb-2 px-1">
               <p class="text-xs font-bold text-gray-400">スタンプ達成度</p>
               <p class="text-xl font-black text-[#ff6b6b]">${visitedCount}<span class="text-sm text-gray-300"> / ${referenceShops.length}</span></p>
             </div>
             <div class="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
-              <div class="h-full bg-gradient-to-r from-[#ff6b6b] to-orange-400 transition-all duration-1000" style="width:${progressPercent}%"></div>
+              <div class="h-full bg-[#ff6b6b] transition-all duration-1000" style="width:${progressPercent}%"></div>
             </div>
           </div>
 
           <div class="flex justify-center gap-3 mb-8">
-            <button onclick="openGuide()" class="flex-1 bg-white text-gray-500 font-bold py-4 rounded-2xl shadow-sm border border-gray-100 text-sm">❓ 使い方</button>
-            <button onclick="openScanner()" class="flex-[2] bg-[#ff6b6b] text-white font-bold py-4 rounded-2xl shadow-lg flex items-center justify-center gap-2">📸 スキャン</button>
+            <button onclick="openGuide()" class="flex-1 bg-white text-gray-400 font-bold py-4 rounded-2xl shadow-sm border border-gray-100 text-sm">❓ 使い方</button>
+            <button onclick="openScanner()" class="flex-[3] bg-[#ff6b6b] text-white font-bold py-4 rounded-2xl shadow-lg flex items-center justify-center gap-2">📸 QRコード読み込み</button>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -147,16 +135,10 @@
           </div>
 
           ${visitedCount === referenceShops.length ? `
-            <div class="bg-gradient-to-br from-yellow-400 to-orange-500 p-8 rounded-[2.5rem] text-white text-center shadow-xl mt-12 mb-10">
-              <p class="text-4xl mb-2">🏆</p>
+            <div class="bg-gradient-to-br from-yellow-400 to-orange-500 p-8 rounded-[2.5rem] text-white text-center shadow-xl mt-10">
               <p class="font-black text-2xl uppercase tracking-widest">Complete!</p>
-              <p class="text-sm mt-2 opacity-90 font-bold">糸島センベロマスターの称号を贈ります！</p>
             </div>
           ` : ''}
-        </div>
-
-        <div class="fixed bottom-8 left-1/2 -translate-x-1/2 w-[85%] max-w-sm z-[1000]">
-           <button onclick="openScanner()" class="w-full bg-[#ff6b6b] text-white font-bold py-5 rounded-[2rem] shadow-[0_15px_40px_rgba(255,107,107,0.4)] active:scale-95 transition-transform text-lg border-2 border-white/20 tracking-widest">QRを読み取る</button>
         </div>
       `;
     }
@@ -172,13 +154,12 @@
       document.getElementById('detail-visited-badge').className = isVisited ? 'mb-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full w-fit' : 'hidden';
       document.getElementById('detail-name').innerText = shop.name;
       document.getElementById('detail-address-link').innerText = "📍 " + shop.address;
-      document.getElementById('detail-address-link').href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(shop.name + " " + shop.address);
+      document.getElementById('detail-address-link').href = "https://www.google.com/maps/search/" + encodeURIComponent(shop.name + " " + shop.address);
       document.getElementById('detail-tel-link').href = "tel:" + shop.tel.replace(/-/g, '');
       document.getElementById('detail-food').innerText = shop.food;
       document.getElementById('detail-desc').innerText = shop.description;
       document.getElementById('detail-image').style.backgroundImage = "url('" + shop.image + "')";
       document.getElementById('detail-modal').classList.remove('hidden');
-      document.querySelector('#detail-modal > div').scrollTop = 0;
     }
 
     async function openScanner() {
@@ -213,7 +194,7 @@
             localStorage.setItem('senbero_visited', JSON.stringify(visitedShops));
             confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
             renderApp();
-            alert(`${shop.name}のスタンプを獲得しました！`);
+            alert(`${shop.name} スタンプGET!`);
             closeScanner(); return;
           }
         }
