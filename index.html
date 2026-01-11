@@ -46,7 +46,7 @@
           <p class="text-[10px] font-bold text-orange-400 mb-1 tracking-widest uppercase flex items-center gap-1">
             <span>🍴</span> フード
           </p>
-          <p id="detail-food" class="font-bold text-lg text-[#ff6b6b] leading-tight pl-4"></p>
+          <p id="detail-food" class="font-bold text-lg text-[#ff6b6b] leading-tight"></p>
         </div>
 
         <p id="detail-desc" class="text-sm leading-relaxed mb-6 text-gray-600"></p>
@@ -106,14 +106,15 @@
               <div class="w-20 h-20 rounded-2xl bg-gray-100 bg-cover bg-center" style="background-image:url('${shop.image}')"></div>
               <div class="flex-1 ml-4 pr-4">
                 <h3 class="font-black text-lg mb-1">${shop.name}</h3>
-                <p class="text-[10px] text-gray-400">${shop.address}</p>
-                <div class="mt-2">
-                  <p class="text-[9px] text-orange-400 font-bold mb-0.5 flex items-center gap-1">
+                <p class="text-[10px] text-gray-400 mb-2">${shop.address}</p>
+                
+                <div class="mt-1">
+                  <p class="text-[9px] text-orange-400 font-bold mb-0 flex items-center gap-1 uppercase tracking-tighter">
                     <span>🍴</span> フード
                   </p>
-                  <div class="flex justify-between items-center">
-                    <span class="text-xs font-bold text-[#ff6b6b] pl-3">${shop.food}</span>
-                    <span>${isVisited ? '✅' : '≫'}</span>
+                  <div class="flex justify-between items-end">
+                    <span class="text-xs font-bold text-[#ff6b6b] leading-tight">${shop.food}</span>
+                    <span class="text-xl">${isVisited ? '✅' : '≫'}</span>
                   </div>
                 </div>
               </div>
