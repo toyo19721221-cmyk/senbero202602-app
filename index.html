@@ -17,11 +17,8 @@
     #video { width: 100%; height: 100%; object-fit: cover; }
     .scan-line { position: absolute; width: 100%; height: 3px; background: #ff6b6b; top: 0; left: 0; animation: scan 2s linear infinite; box-shadow: 0 0 8px #ff6b6b; }
     @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
-    
-    /* マップ画面のレイアウト */
     #map-container { display: none; position: fixed; inset: 0; z-index: 4000; background: white; flex-direction: column; }
     #map-canvas { flex: 1; width: 100%; }
-    
     .modal-enter { animation: modalFadeIn 0.3s ease-out; }
     @keyframes modalFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
   </style>
@@ -42,7 +39,7 @@
 
   <div id="qr-modal" class="hidden fixed inset-0 z-[3000] bg-black/90 flex flex-col items-center justify-center p-6">
     <div id="video-container">
-      <video id="video"></video>
+      <video id="video" playsinline></video>
       <div class="scan-line"></div>
     </div>
     <div class="mt-8 text-white text-center">
@@ -52,4 +49,183 @@
     <canvas id="canvas" hidden></canvas>
   </div>
 
-  <div id="detail-modal" class="hidden fixed inset-0 z-[2000] bg-black/6
+  <div id="detail-modal" class="hidden fixed inset-0 z-[2000] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeDetail()">
+    <div class="bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl modal-enter" onclick="event.stopPropagation()">
+      <div id="detail-image" class="w-full h-48 bg-gray-200 bg-cover bg-center"></div>
+      <div class="p-6">
+        <h2 id="detail-name" class="text-2xl font-black mb-1"></h2>
+        <div class="flex items-center justify-between mb-4">
+          <p id="detail-address" class="text-sm text-gray-500"></p>
+          <a id="detail-tel-link" href="" class="bg-green-500 text-white p-2 rounded-full shadow-md active:scale-90 transition-transform">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+            </svg>
+          </a>
+        </div>
+        <div class="bg-orange-50 p-4 rounded-xl mb-4 border border-orange-100">
+          <p class="text-[10px] font-bold text-orange-400 mb-2 uppercase tracking-widest">ITOSHIMA SENBERO SET</p>
+          <div class="flex items-center gap-2 mb-2 text-[#ff6b6b]">
+            <span class="text-xl">🍺</span>
+            <p class="font-bold text-lg">ドリンク 3杯</p>
+          </div>
+          <div class="flex items-start gap-2 text-[#ff6b6b]">
+            <span class="text-xl">🍴</span>
+            <div>
+              <p class="text-xs font-bold opacity-70">選べるフード 1品：</p>
+              <p id="detail-food" class="font-bold text-lg leading-tight"></p>
+            </div>
+          </div>
+        </div>
+        <p id="detail-desc" class="text-sm leading-relaxed mb-6 text-gray-600"></p>
+        <button onclick="closeDetail()" class="w-full bg-gray-100 py-4 rounded-2xl font-bold text-gray-500">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // マップスタイル設定（他店アイコンを非表示）
+    const myMapStyle = [
+      { "featureType": "poi", "elementType": "all", "stylers": [{ "visibility": "off" }] },
+      { "featureType": "transit", "elementType": "labels.icon", "stylers": [{ "visibility": "off" }] }
+    ];
+
+    const config = { event_title: "糸島センベロ 2026", primary_color: "#ff6b6b" };
+
+    const referenceShops = [
+      { id: "itoshima_01", name: "ビーチ食堂 Mr.BEACH", address: "糸島市前原中央2-1-21", tel: "092-321-3118", food: "ガーリックシュリンプ(3尾)", qrCode: "BEACH_OPEN_2026", location: { lat: 33.559868, lng: 130.198308 }, description: "ハワイアン気分でセンベロ！", image: "https://images.unsplash.com/photo-1559740064-c6b367bd1918?w=400" },
+      { id: "itoshima_02", name: "SHIMA", address: "糸島市前原中央3-20-19", tel: "092-324-4168", food: "糸島野菜の天ぷら盛り", qrCode: "SHIMA_ITOSHIMA_WASHOKU", location: { lat: 33.558334, lng: 130.194723 }, description: "地元野菜が絶品！", image: "https://images.unsplash.com/photo-1534422298391-e4f8c170db06?w=400" },
+      { id: "itoshima_03", name: "レストラン ITOSHIMA", address: "糸島市泊647-2", tel: "092-322-4551", food: "自家製生ハム＆サラミ", qrCode: "RES_ITO_HAM_STAMP", location: { lat: 33.582855, lng: 130.183305 }, description: "糸島ハム直営店。", image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400" },
+      { id: "itoshima_04", name: "糸島グリル", address: "糸島市前原西1-14-12", tel: "092-321-1412", food: "ミニメンチカツ", qrCode: "ITO_GRILL_LUNCH_STAMP", location: { lat: 33.561555, lng: 130.192105 }, description: "揚げたてサクサク！", image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=400" }
+    ];
+
+    let visitedShops = JSON.parse(localStorage.getItem('senbero_visited')) || [];
+    let map;
+
+    // Googleマップ初期化関数
+    function initMap() {
+      try {
+        const itoshimaCenter = { lat: 33.5597, lng: 130.1973 };
+        map = new google.maps.Map(document.getElementById("map-canvas"), {
+          center: itoshimaCenter, zoom: 14, styles: myMapStyle, disableDefaultUI: true, zoomControl: true
+        });
+        referenceShops.forEach(shop => {
+          const marker = new google.maps.Marker({
+            position: shop.location, map: map, title: shop.name,
+            icon: { path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW, fillColor: "#ff6b6b", fillOpacity: 1, strokeWeight: 2, strokeColor: "#ffffff", scale: 10 }
+          });
+          marker.addListener("click", () => openDetail(shop.id));
+        });
+      } catch (e) { console.error("Map init failed", e); }
+    }
+
+    function openMap() {
+      document.getElementById('map-container').style.display = 'flex';
+      if(map) google.maps.event.trigger(map, "resize");
+    }
+    function closeMap() { document.getElementById('map-container').style.display = 'none'; }
+
+    // スキャナー関連
+    let videoStream = null;
+    async function openScanner() {
+      try {
+        document.getElementById('qr-modal').classList.remove('hidden');
+        videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        const video = document.getElementById('video');
+        video.srcObject = videoStream;
+        video.play();
+        requestAnimationFrame(tick);
+      } catch (err) { alert("カメラ起動失敗"); closeScanner(); }
+    }
+    function closeScanner() {
+      document.getElementById('qr-modal').classList.add('hidden');
+      if (videoStream) videoStream.getTracks().forEach(track => track.stop());
+    }
+    function tick() {
+      const video = document.getElementById('video');
+      const canvasElement = document.getElementById('canvas');
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvasElement.height = video.videoHeight;
+        canvasElement.width = video.videoWidth;
+        const canvas = canvasElement.getContext('2d');
+        canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+        const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+        if (code) { handleQrResult(code.data); return; }
+      }
+      if (!document.getElementById('qr-modal').classList.contains('hidden')) requestAnimationFrame(tick);
+    }
+    function handleQrResult(qrText) {
+      const shop = referenceShops.find(s => s.qrCode === qrText.trim());
+      if (shop) {
+        if (!visitedShops.some(v => v.shop_id === shop.id)) {
+          visitedShops.push({ shop_id: shop.id });
+          localStorage.setItem('senbero_visited', JSON.stringify(visitedShops));
+          renderApp();
+          alert(`✓ ${shop.name} 達成！`);
+        } else { alert("済"); }
+      }
+      closeScanner();
+    }
+
+    function openDetail(shopId) {
+      const shop = referenceShops.find(s => s.id === shopId);
+      if (!shop) return;
+      document.getElementById('detail-name').innerText = shop.name;
+      document.getElementById('detail-address').innerText = "📍 " + shop.address;
+      document.getElementById('detail-food').innerText = shop.food;
+      document.getElementById('detail-desc').innerText = shop.description;
+      document.getElementById('detail-image').style.backgroundImage = `url('${shop.image}')`;
+      document.getElementById('detail-tel-link').href = `tel:${shop.tel.replace(/-/g, '')}`;
+      document.getElementById('detail-modal').classList.remove('hidden');
+    }
+    function closeDetail() { document.getElementById('detail-modal').classList.add('hidden'); }
+
+    function renderApp() {
+      const visitedCount = visitedShops.length;
+      const progress = (visitedCount / referenceShops.length) * 100;
+      document.getElementById('app').innerHTML = `
+        <div class="max-w-2xl mx-auto p-6">
+          <header class="text-center mb-8 mt-4">
+            <h1 class="text-4xl font-black italic text-[#ff6b6b]">${config.event_title}</h1>
+            <p class="text-[10px] font-black bg-[#feca57] inline-block px-4 py-1 rounded-full uppercase mt-2">Drink 3 + Food 1 Set</p>
+          </header>
+          <div class="sticky top-4 z-50 mb-8 flex flex-col items-center gap-3">
+            <button onclick="openScanner()" class="w-full max-w-xs bg-[#ff6b6b] text-white text-xl font-bold py-5 rounded-full shadow-2xl">📸 QRコード読み取り</button>
+            <button onclick="openMap()" class="w-full max-w-xs bg-white text-[#ff6b6b] text-lg font-bold py-4 rounded-full shadow-lg border-2 border-[#ff6b6b]">📍 マップを表示</button>
+          </div>
+          <div class="bg-white rounded-[2rem] p-6 mb-8 shadow-xl">
+            <div class="flex justify-between items-end mb-2">
+              <span class="font-black text-gray-400 text-xs">PROGRESS</span>
+              <span class="text-3xl font-black text-[#ff6b6b]">${visitedCount} / ${referenceShops.length}</span>
+            </div>
+            <div class="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+              <div class="h-full bg-[#ff6b6b]" style="width:${progress}%"></div>
+            </div>
+          </div>
+          <div class="grid gap-4">
+            ${referenceShops.map(shop => {
+              const isVisited = visitedShops.some(v => v.shop_id === shop.id);
+              return `
+                <div onclick="openDetail('${shop.id}')" class="shop-card bg-white p-3 rounded-3xl shadow-md border-2 ${isVisited ? 'border-[#ff6b6b]' : 'border-transparent'} flex items-center">
+                  <div class="w-16 h-16 rounded-2xl bg-cover bg-center" style="background-image:url('${shop.image}')"></div>
+                  <div class="ml-4 flex-1">
+                    <h3 class="font-bold text-lg">${shop.name}</h3>
+                    <p class="text-xs text-gray-400">${shop.address}</p>
+                    <span class="text-[10px] bg-orange-50 text-orange-500 px-2 py-0.5 rounded-full">🍴 ${shop.food}</span>
+                  </div>
+                  ${isVisited ? '<span class="text-[#ff6b6b] font-black text-xl mr-2">✓</span>' : ''}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // 初回実行
+    renderApp();
+  </script>
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
+</body>
+</html>
