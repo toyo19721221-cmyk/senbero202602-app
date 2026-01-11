@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ja" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>センベロイベント - QRスキャナー</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&amp;display=swap" rel="stylesheet">
+  <style>
+    body { box-sizing: border-box; font-family: 'Zen Kaku Gothic New', sans-serif; }
+    .shop-card { transition: all 0.3s ease; cursor: pointer; }
+    .shop-card.visited { border-color: #ff6b6b !important; background-color: #fff0f0 !important; }
+    #video-container { position: relative; width: 100%; max-width: 500px; aspect-ratio: 1/1; overflow: hidden; border-radius: 1rem; border: 4px solid white; }
+    #video { width: 100%; height: 100%; object-fit: cover; }
+    .scan-line { position: absolute; width: 100%; height: 2px; background: rgba(255, 107, 107, 0.8); top: 0; left: 0; animation: scan 2s linear infinite; }
+    @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
+  </style>
+</head>
+<body class="h-full bg-[#fff5e6]">
+  <div id="app" class="w-full h-full overflow-auto pb-10">
+    </div>
+
+  <div id="qr-modal" class="hidden fixed inset-0 z-[3000] bg-black/90 flex flex-col items-center justify-center p-4">
+    <div id="video-container">
+      <video id="video"></video>
+      <div class="scan-line"></div>
+    </div>
+    <canvas id="canvas" hidden></canvas>
+    <div class="mt-8 text-white text-center">
+      <h2 class="text-xl font-bold mb-2">QRコードをスキャン</h2>
+      <p class="text-sm opacity-80">お店に設置されたQRコードを<br>枠内に収まるようにかざしてください</p>
+      <button onclick="closeScanner()" class="mt-6 bg-white text-black px-10 py-3 rounded-full font-bold shadow-lg">キャンセル</button>
+    </div>
+  </div>
+
+  <script>
+    // --- 設定とデータ ---
+    const config = {
+      event_title: "センベロイベント",
+      event_description: "QRを読み取ってスタンプを集めよう！",
+      primary_color: "#ff6b6b",
+      accent_color: "#feca57",
+      card_color: "#ffffff",
+      text_color: "#2d3436"
+    };
+
+    const referenceShops = [
+      { id: "shop1", name: "居酒屋たぬき", address: "天神1-2-3", special: "生ビール300円", qrCode: "SHOP1_SECRET" },
+      { id: "shop2", name: "バル・エスパーニャ", address: "大名2-3-4", special: "タパス3品350円", qrCode: "SHOP2_SECRET" },
+      { id: "shop3", name: "立ち飲み富士", address: "今泉3-4-5", special: "日本酒1杯200円", qrCode: "SHOP3_SECRET" }
+      // ※必要に応じて元データの25店舗分をここに追加してください
+    ];
+
+    // LocalStorageから訪問データを取得
+    let visitedShops = JSON.parse(localStorage.getItem('senbero_visited')) || [];
+
+    // --- カメラ・スキャナー機能 ---
+    let videoStream = null;
+    const video = document.getElementById('video');
+    const canvasElement = document.getElementById('canvas');
+    const canvas = canvasElement.getContext('2d');
+
+    async function openScanner() {
+      try {
+        const modal = document.getElementById('qr-modal');
+        modal.classList.remove('hidden');
+        videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        video.srcObject = videoStream;
+        video.setAttribute("playsinline", true);
+        video.play();
+        requestAnimationFrame(tick);
+      } catch (err) {
+        alert("カメラの起動に失敗しました。設定を確認してください。");
+        closeScanner();
+      }
+    }
+
+    function closeScanner() {
+      document.getElementById('qr-modal').classList.add('hidden');
+      if (videoStream) {
+        videoStream.getTracks().forEach(track => track.stop());
+      }
+    }
+
+    function tick() {
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvasElement.height = video.videoHeight;
+        canvasElement.width = video.videoWidth;
+        canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+        const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+
+        if (code) {
+          handleQrResult(code.data);
+          return;
+        }
+      }
+      if (!document.getElementById('qr-modal').classList.contains('hidden')) {
+        requestAnimationFrame(tick);
+      }
+    }
+
+    function handleQrResult(qrText) {
+      const shop = referenceShops.find(s => s.qrCode === qrText);
+      if (shop) {
+        if (visitedShops.some(v => v.shop_id === shop.id)) {
+          alert('このお店は既に訪問済みです！');
+        } else {
+          visitedShops.push({ shop_id: shop.id, visited_at: new Date().toISOString() });
+          localStorage.setItem('senbero_visited', JSON.stringify(visitedShops));
+          alert(`✓ ${shop.name} のスタンプを獲得しました！`);
+        }
+        closeScanner();
+        renderApp();
+      } else {
+        // 見つからない場合はスキャン継続
+        requestAnimationFrame(tick);
+      }
+    }
+
+    function removeStamp(shopId, event) {
+      event.stopPropagation();
+      if(confirm('スタンプを削除しますか？')) {
+        visitedShops = visitedShops.filter(v => v.shop_id !== shopId);
+        localStorage.setItem('senbero_visited', JSON.stringify(visitedShops));
+        renderApp();
+      }
+    }
+
+    // --- UI描画 ---
+    function renderApp() {
+      const visitedCount = visitedShops.length;
+      const progressPercent = (visitedCount / referenceShops.length) * 100;
+      
+      const app = document.getElementById('app');
+      app.innerHTML = `
+        <div class="max-w-2xl mx-auto p-6 text-[${config.text_color}]">
+          <header class="text-center mb-10 mt-6">
+            <h1 class="text-4xl font-black mb-2" style="color:${config.primary_color}">🍻 ${config.event_title}</h1>
+            <p class="opacity-70 font-medium">${config.event_description}</p>
+          </header>
+
+          <div class="sticky top-4 z-50 mb-8 flex justify-center">
+            <button onclick="openScanner()" class="bg-gradient-to-br from-[${config.primary_color}] to-[${config.accent_color}] text-white text-xl font-bold px-8 py-4 rounded-full shadow-xl transform active:scale-95 transition-transform flex items-center gap-2">
+              📸 QRコードを読み取る
+            </button>
+          </div>
+
+          <div class="bg-white rounded-2xl p-6 mb-8 shadow-md">
+            <div class="flex justify-between items-end mb-3">
+              <span class="font-bold">現在のスタンプ数</span>
+              <span class="text-3xl font-black text-[${config.primary_color}]">${visitedCount}<small class="text-base text-gray-400 font-normal"> / ${referenceShops.length}</small></span>
+            </div>
+            <div class="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-[${config.primary_color}] to-[${config.accent_color}] transition-all duration-500" style="width:${progressPercent}%"></div>
+            </div>
+          </div>
+
+          <div class="grid gap-4">
+            ${referenceShops.map(shop => {
+              const isVisited = visitedShops.some(v => v.shop_id === shop.id);
+              return `
+                <div class="shop-card bg-white p-5 rounded-xl shadow-sm border-2 ${isVisited ? 'visited border-transparent' : 'border-transparent'}">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h3 class="text-lg font-bold mb-1">${shop.name}</h3>
+                      <p class="text-xs text-gray-500 mb-2">📍 ${shop.address}</p>
+                      <span class="inline-block text-xs font-bold px-2 py-1 rounded-md bg-[${config.accent_color}]/20 text-[${config.primary_color}]">
+                        ${shop.special}
+                      </span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                       <div class="w-12 h-12 rounded-full border-2 flex items-center justify-center ${isVisited ? 'bg-[#ff6b6b] border-[#ff6b6b]' : 'border-gray-200'}">
+                          ${isVisited ? '<span class="text-white text-2xl font-bold">✓</span>' : ''}
+                       </div>
+                       ${isVisited ? `<button onclick="removeStamp('${shop.id}', event)" class="mt-2 text-[10px] text-gray-400 underline">削除</button>` : ''}
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // 初回起動
+    renderApp();
+  </script>
+</body>
+</html>
