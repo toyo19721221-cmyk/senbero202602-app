@@ -14,7 +14,7 @@
     .shop-card:active { transform: scale(0.98); }
     .shop-card.visited { border-color: #ff6b6b; background-color: #fff0f0; }
     
-    #detail-panel { transform: translateY(100%); transition: transform 0.3s ease-out; }
+    #detail-panel { transform: translateY(100%); transition: transform 0.3s ease-out; position: fixed; bottom: 0; left: 0; right: 0; background: white; z-index: 5000; }
     #detail-panel.open { transform: translateY(0); }
     
     #qr-modal { display: none; position: fixed; inset: 0; z-index: 3000; background: rgba(0,0,0,0.9); flex-direction: column; align-items: center; justify-content: center; }
@@ -39,16 +39,17 @@
   </div>
 
   <div id="detail-overlay" onclick="closeDetail()" class="fixed inset-0 bg-black/50 z-[4000] hidden opacity-0 transition-opacity duration-300"></div>
-  <div id="detail-panel" class="fixed bottom-0 left-0 right-0 bg-white rounded-t-[3rem] z-[5000] p-8 shadow-2xl max-w-md mx-auto">
+  <div id="detail-panel" class="rounded-t-[3rem] p-8 shadow-2xl max-w-md mx-auto">
     <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
     <div id="detail-content"></div>
     <button onclick="closeDetail()" class="w-full mt-4 bg-gray-100 py-4 rounded-2xl font-bold text-gray-600">閉じる</button>
   </div>
 
   <script>
-    const MAP_URL_ALL = "https://www.google.com/maps/d/edit?mid=1Ccp-4uTNhhVQIScUex6iDbBdVL_Ilu0&usp=sharing\n\u30D3\u30FC\u30C1\u98DF\u58022";
+    // 地図URLの定義
+    const MAP_URL_ALL = "https://www.google.com/maps/d/viewer?mid=1Ccp-4uTNhhl-1C1Xq-Gq7_t9N6O7WvY";
 
-    // 住所(address)と店舗専用URL(mapUrl)を追加
+    // 店舗データ（住所、電話番号、個別マップURLを追加）
     const shops = [
       { 
         id: "s1", 
@@ -57,7 +58,7 @@
         desc: "糸島の海を感じる絶品シュリンプ！", 
         tel: "092-321-4925",
         address: "福岡県糸島市前原中央2-1-21 2F",
-        mapUrl: "https://maps.google.com/?cid=17530663823963007731&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQ",
+        mapUrl: "https://maps.app.goo.gl/0X6Wt8XpQTUR8yob0N1tSfM",
         qrCode: "BEACH_2026" 
       },
       { 
@@ -65,20 +66,21 @@
         name: "SHIMA", 
         food: "糸島野菜の天ぷら", 
         desc: "旬の糸島野菜をサクサクの天ぷらで。", 
-        tel: "092-987-6543",
+        tel: "092-321-4925",
         address: "福岡県糸島市前原中央3-20-19",
-        mapUrl: "https://maps.google.com/?cid=739167780140539238&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQ",
+        mapUrl: "https://maps.app.goo.gl/6zSyHQDpQTURZt2wBC4NQgo",
         qrCode: "SHIMA_2026" 
       }
     ];
 
     let visited = JSON.parse(localStorage.getItem('senbero_visited')) || [];
 
+    // 全体マップを開く
     function openMap() {
       window.open(MAP_URL_ALL, '_blank');
     }
 
-    // 詳細表示機能（住所と地図リンクを追加）
+    // 店舗詳細を表示
     function openDetail(shopId) {
       const shop = shops.find(s => s.id === shopId);
       const isVisited = visited.some(v => v.id === shopId);
@@ -89,23 +91,18 @@
           <div class="text-5xl mb-4">${isVisited ? '✅' : '🏠'}</div>
           <h2 class="text-2xl font-black mb-2">${shop.name}</h2>
           <p class="text-[#ff6b6b] font-bold mb-1">🍴 ${shop.food}</p>
-          
           <div onclick="window.open('${shop.mapUrl}', '_blank')" class="text-sm text-blue-500 underline mb-4 cursor-pointer">
             📍 ${shop.address}
           </div>
-          
-          <p class="text-gray-600 leading-relaxed mb-6 px-4">${shop.desc}</p>
-          
+          <p class="text-gray-600 mb-6 px-4">${shop.desc}</p>
           <div class="flex flex-col gap-3">
-            <a href="tel:${shop.tel}" class="flex items-center justify-center gap-2 bg-green-500 text-white py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-transform">
+            <a href="tel:${shop.tel}" class="flex items-center justify-center gap-2 bg-green-500 text-white py-4 rounded-2xl font-bold shadow-lg">
               📞 電話で問合せ
             </a>
-            
-            <button onclick="window.open('${shop.mapUrl}', '_blank')" class="flex items-center justify-center gap-2 bg-blue-500 text-white py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-transform">
-              🗺️ 地図アプリで場所を確認
+            <button onclick="window.open('${shop.mapUrl}', '_blank')" class="flex items-center justify-center gap-2 bg-blue-500 text-white py-4 rounded-2xl font-bold shadow-lg">
+              🗺️ 個別マップを開く
             </button>
           </div>
-
           <div class="mt-6 p-4 rounded-2xl ${isVisited ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'} font-bold">
             ${isVisited ? 'スタンプ獲得済み！' : 'スタンプはまだです'}
           </div>
@@ -122,7 +119,72 @@
     function closeDetail() {
       document.getElementById('detail-overlay').style.opacity = '0';
       document.getElementById('detail-panel').classList.remove('open');
-      setTimeout(() => {
-        document.getElementById('detail-overlay').classList.add('hidden');
-      }, 300);
+      setTimeout(() => document.getElementById('detail-overlay').classList.add('hidden'), 300);
     }
+
+    // --- QRスキャナー制御 ---
+    let stream = null;
+    async function openScanner() {
+      document.getElementById('qr-modal').style.display = 'flex';
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        const v = document.getElementById('video');
+        v.srcObject = stream;
+        v.setAttribute("playsinline", true);
+        v.play();
+        requestAnimationFrame(tick);
+      } catch (e) {
+        alert("カメラを起動できませんでした。");
+        closeScanner();
+      }
+    }
+
+    function closeScanner() {
+      document.getElementById('qr-modal').style.display = 'none';
+      if (stream) stream.getTracks().forEach(t => t.stop());
+    }
+
+    function tick() {
+      const v = document.getElementById('video');
+      if (v.readyState === v.HAVE_ENOUGH_DATA) {
+        const c = document.getElementById('canvas');
+        c.height = v.videoHeight; c.width = v.videoWidth;
+        const ctx = c.getContext('2d');
+        ctx.drawImage(v, 0, 0, c.width, c.height);
+        const code = jsQR(ctx.getImageData(0,0,c.width,c.height).data, c.width, c.height);
+        if (code) {
+          const shop = shops.find(s => s.qrCode === code.data.trim());
+          if (shop && !visited.some(vs => vs.id === shop.id)) {
+            visited.push({ id: shop.id });
+            localStorage.setItem('senbero_visited', JSON.stringify(visited));
+            render();
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+          }
+          closeScanner(); return;
+        }
+      }
+      if (document.getElementById('qr-modal').style.display === 'flex') requestAnimationFrame(tick);
+    }
+
+    // リスト描画
+    function render() {
+      const list = document.getElementById('shop-list');
+      list.innerHTML = shops.map(s => `
+        <div onclick="openDetail('${s.id}')" class="shop-card p-5 flex items-center ${visited.some(v => v.id === s.id) ? 'visited' : ''}">
+          <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-xl">
+            ${visited.some(v => v.id === s.id) ? '✅' : '🏠'}
+          </div>
+          <div class="ml-4 flex-1">
+            <h3 class="font-bold text-lg">${s.name}</h3>
+            <p class="text-sm text-gray-500 italic">🍴 ${s.food}</p>
+          </div>
+          <span class="text-gray-300 font-bold">〉</span>
+        </div>
+      `).join('');
+    }
+
+    // 初期実行
+    render();
+  </script>
+</body>
+</html>
