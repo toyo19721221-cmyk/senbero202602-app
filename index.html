@@ -43,9 +43,13 @@
         </a>
         
         <div class="bg-orange-50 p-4 rounded-xl mb-4 border border-orange-100">
-          <p class="text-xs font-bold text-orange-400 mb-1 uppercase">センベロ特典</p>
-          <p id="detail-special" class="font-bold text-lg text-[#ff6b6b]"></p>
+          <p class="text-xs font-bold text-orange-400 mb-2 uppercase tracking-wider">糸島センベロ特典</p>
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">🍴</span>
+            <p id="detail-food" class="font-bold text-lg text-[#ff6b6b] leading-tight"></p>
+          </div>
         </div>
+
         <p id="detail-desc" class="text-sm leading-relaxed mb-6 text-gray-600"></p>
         <button onclick="closeDetail()" class="w-full bg-gray-100 py-4 rounded-2xl font-bold text-gray-500">閉じる</button>
       </div>
@@ -59,7 +63,7 @@
         name: "music bar en ミュージックバー エン/縁", 
         address: "福岡県糸島市前原中央2-1-21", 
         tel: "092-332-9011",
-        special: "おすすめドリンク1杯サービス", 
+        food: "おつまみ3種盛り合わせ", 
         qrCode: "MusicBarEn_1",
         description: "音楽とお酒を楽しめる心地よい空間。前原の夜を彩るミュージックバーです。",
         image: "en.jpg" 
@@ -69,7 +73,7 @@
         name: "スナック ローズノアール", 
         address: "福岡県糸島市前原中央2-3-2", 
         tel: "092-324-1111", 
-        special: "おつまみ1品サービス", 
+        food: "自家製ポテトサラダ & 乾き物", 
         qrCode: "RoseNoir_2",
         description: "アットホームな雰囲気で、地元の方に愛されるスナックです。",
         image: "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=400"
@@ -79,7 +83,7 @@
         name: "CURRENT", 
         address: "福岡県糸島市志摩野北2290", 
         tel: "092-330-5000", 
-        special: "自家製ミニデザート", 
+        food: "糸島野菜のミニキッシュ", 
         qrCode: "Current_3",
         description: "野北海岸を見渡す絶景カフェ＆レストラン。",
         image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400"
@@ -104,7 +108,9 @@
                 <h3 class="font-black text-lg mb-1">${shop.name}</h3>
                 <p class="text-[10px] text-gray-400">${shop.address}</p>
                 <div class="flex justify-between items-center mt-2">
-                  <span class="text-[10px] bg-red-50 text-[#ff6b6b] px-2 py-1 rounded">${shop.special}</span>
+                  <span class="text-[10px] bg-red-50 text-[#ff6b6b] px-2 py-1 rounded flex items-center gap-1">
+                    🍴 ${shop.food}
+                  </span>
                   <span>${isVisited ? '✅' : '≫'}</span>
                 </div>
               </div>
@@ -140,7 +146,6 @@
       const query = encodeURIComponent(shop.name + " " + shop.address);
       addressLink.href = "https://www.google.com/maps/search/?api=1&query=" + query;
       
-      // 電話ボタンの設定
       const telLink = document.getElementById('detail-tel-link');
       if (shop.tel) {
         telLink.href = "tel:" + shop.tel.replace(/-/g, '');
@@ -149,7 +154,7 @@
         telLink.style.display = "none";
       }
       
-      document.getElementById('detail-special').innerText = shop.special;
+      document.getElementById('detail-food').innerText = shop.food;
       document.getElementById('detail-desc').innerText = shop.description;
       document.getElementById('detail-image').style.backgroundImage = "url('" + shop.image + "')";
       document.getElementById('detail-modal').classList.remove('hidden');
