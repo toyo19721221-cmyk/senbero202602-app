@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>センベロ 2026 - スタンプラリー</title>
+  <title>糸島センベロ 2026</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -42,10 +42,22 @@
       <div class="p-6">
         <h2 id="detail-name" class="text-2xl font-black mb-1"></h2>
         <p id="detail-address" class="text-sm text-gray-500 mb-4"></p>
+        
         <div class="bg-orange-50 p-4 rounded-xl mb-4 border border-orange-100">
-          <p class="text-xs font-bold text-orange-400 mb-1 uppercase tracking-widest">センベロ特典</p>
-          <p id="detail-special" class="font-bold text-lg text-[#ff6b6b]"></p>
+          <p class="text-[10px] font-bold text-orange-400 mb-2 uppercase tracking-widest">ITOSHIMA SENBERO SET</p>
+          <div class="flex items-center gap-2 mb-2 text-[#ff6b6b]">
+            <span class="text-xl">🍺</span>
+            <p class="font-bold text-lg">ドリンク 3杯</p>
+          </div>
+          <div class="flex items-start gap-2 text-[#ff6b6b]">
+            <span class="text-xl">🍴</span>
+            <div>
+              <p class="text-xs font-bold opacity-70">選べるフード 1品：</p>
+              <p id="detail-food" class="font-bold text-lg leading-tight"></p>
+            </div>
+          </div>
         </div>
+
         <p id="detail-desc" class="text-sm leading-relaxed mb-6 text-gray-600"></p>
         <button onclick="closeDetail()" class="w-full bg-gray-100 py-4 rounded-2xl font-bold text-gray-500">閉じる</button>
       </div>
@@ -54,31 +66,54 @@
 
   <script>
     const config = {
-      event_title: "センベロ 2026",
+      event_title: "糸島センベロ 2026",
       primary_color: "#ff6b6b",
       accent_color: "#feca57"
     };
 
+    // 糸島市の飲食店データ（センベロ仕様）
     const referenceShops = [
       { 
-        id: "shop1", name: "居酒屋たぬき", address: "天神1-2-3", special: "生ビール300円", qrCode: "SHOP1_SECRET",
-        description: "昭和レトロな雰囲気が自慢のお店。名物の手羽先唐揚げとビールの相性は抜群です！",
-        image: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400"
+        id: "itoshima_01", 
+        name: "ビーチ食堂 Mr.BEACH", 
+        address: "糸島市前原中央2-1-21", 
+        food: "ガーリックシュリンプ(3尾)", 
+        qrCode: "BEACH_OPEN_2026",
+        description: "ハワイアン気分でセンベロ！プリプリの海老とビールは相性抜群です。開放的な店内で楽しんでください。",
+        image: "https://images.unsplash.com/photo-1559740064-c6b367bd1918?w=400"
       },
       { 
-        id: "shop2", name: "バル・エスパーニャ", address: "大名2-3-4", special: "タパス3品350円", qrCode: "SHOP2_SECRET",
-        description: "本格的なスペイン料理をリーズナブルに。自家製サングリアも人気です。",
-        image: "https://images.unsplash.com/photo-1534353436294-0dbd4bdac845?w=400"
+        id: "itoshima_02", 
+        name: "SHIMA", 
+        address: "糸島市前原中央3-20-19", 
+        food: "糸島野菜の天ぷら盛り合わせ", 
+        qrCode: "SHIMA_ITOSHIMA_WASHOKU",
+        description: "地元で採れたての旬野菜をサクサクの天ぷらで。日本酒や焼酎も選べます。",
+        image: "https://images.unsplash.com/photo-1534422298391-e4f8c170db06?w=400"
       },
       { 
-        id: "shop3", name: "立ち飲み富士", address: "今泉3-4-5", special: "日本酒1杯200円", qrCode: "SHOP3_SECRET",
-        description: "仕事帰りにサクッと寄れる立ち飲みスタイル。地元の銘酒を取り揃えています。",
-        image: "https://images.unsplash.com/photo-1583155702164-6a8a5426ef7a?w=400"
+        id: "itoshima_03", 
+        name: "レストラン ITOSHIMA", 
+        address: "糸島市泊647-2", 
+        food: "自家製生ハム＆サラミ盛り", 
+        qrCode: "RES_ITO_HAM_STAMP",
+        description: "糸島ハム直営店ならではの贅沢な盛り合わせ。赤ワインとのペアリングがおすすめです。",
+        image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400"
+      },
+      { 
+        id: "itoshima_04", 
+        name: "糸島グリル", 
+        address: "糸島市前原西1-14-12", 
+        food: "黒毛和牛のミニメンチカツ", 
+        qrCode: "ITO_GRILL_LUNCH_STAMP",
+        description: "肉汁たっぷりの特製メンチカツを揚げたてでご提供！ハイボールが止まりません。",
+        image: "https://images.unsplash.com/photo-1544025162-d76694265947?w=400"
       }
     ];
 
     let visitedShops = JSON.parse(localStorage.getItem('senbero_visited')) || [];
 
+    // --- カメラ・スキャナー機能 ---
     let videoStream = null;
     const video = document.getElementById('video');
     const canvasElement = document.getElementById('canvas');
@@ -93,7 +128,7 @@
         video.play();
         requestAnimationFrame(tick);
       } catch (err) {
-        alert("カメラの起動に失敗しました。ブラウザの設定でカメラを許可してください。");
+        alert("カメラの起動に失敗しました。");
         closeScanner();
       }
     }
@@ -128,25 +163,22 @@
           localStorage.setItem('senbero_visited', JSON.stringify(visitedShops));
           closeScanner();
           renderApp();
-          
-          if (visitedShops.length === referenceShops.length) {
-            celebrateComplete();
-          } else {
-            alert(`✓ ${shop.name} のスタンプを獲得！`);
-          }
+          if (visitedShops.length === referenceShops.length) celebrateComplete();
+          else alert(`✓ ${shop.name} 達成！`);
         }
       } else {
         requestAnimationFrame(tick);
       }
     }
 
+    // --- 詳細表示 ---
     function openDetail(shopId) {
       const shop = referenceShops.find(s => s.id === shopId);
       if (!shop) return;
       document.getElementById('detail-name').innerText = shop.name;
       document.getElementById('detail-address').innerText = "📍 " + shop.address;
-      document.getElementById('detail-special').innerText = shop.special;
-      document.getElementById('detail-desc').innerText = shop.description || "お店の詳細情報は準備中です。";
+      document.getElementById('detail-food').innerText = shop.food; // ここをfoodに変更
+      document.getElementById('detail-desc').innerText = shop.description;
       document.getElementById('detail-image').style.backgroundImage = `url('${shop.image}')`;
       document.getElementById('detail-modal').classList.remove('hidden');
     }
@@ -155,21 +187,18 @@
       document.getElementById('detail-modal').classList.add('hidden');
     }
 
+    // --- 演出 ---
     function celebrateComplete() {
       const duration = 5 * 1000;
       const animationEnd = Date.now() + duration;
       const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 5000 };
-      function randomInRange(min, max) { return Math.random() * (max - min) + min; }
-
       const interval = setInterval(function() {
         const timeLeft = animationEnd - Date.now();
         if (timeLeft <= 0) return clearInterval(interval);
         const particleCount = 50 * (timeLeft / duration);
-        confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
-        confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+        confetti(Object.assign({}, defaults, { particleCount, origin: { x: Math.random(), y: Math.random() - 0.2 } }));
       }, 250);
-      
-      setTimeout(() => alert("🎉 おめでとうございます！全店舗制覇しました！"), 500);
+      setTimeout(() => alert("🎉 おめでとうございます！コンプリートです！"), 500);
     }
 
     function removeStamp(shopId, event) {
@@ -189,18 +218,18 @@
         <div class="max-w-2xl mx-auto p-6">
           <header class="text-center mb-10 mt-6">
             <h1 class="text-4xl font-black mb-2 italic" style="color:${config.primary_color}">${config.event_title}</h1>
-            <p class="text-xs font-bold bg-[#feca57] inline-block px-4 py-1 rounded-full uppercase tracking-tighter">Stamp Rally</p>
+            <p class="text-[10px] font-black bg-[#feca57] inline-block px-4 py-1 rounded-full uppercase tracking-tighter">Drink 3 + Food 1 Set</p>
           </header>
 
           <div class="sticky top-4 z-50 mb-8 flex justify-center">
             <button onclick="openScanner()" class="bg-[#ff6b6b] text-white text-xl font-bold px-8 py-5 rounded-full shadow-2xl active:scale-90 transition-transform flex items-center gap-3">
-              <span class="text-2xl">📸</span> QRコード読み取り
+              <span class="text-2xl text-white">📸</span> QRコードを読み取る
             </button>
           </div>
 
           <div class="bg-white rounded-[2.5rem] p-8 mb-8 shadow-xl border-4 border-white">
             <div class="flex justify-between items-end mb-4">
-              <span class="font-black text-gray-400">STATUS</span>
+              <span class="font-black text-gray-400 text-xs">VISITED STORES</span>
               <span class="text-4xl font-black text-[#ff6b6b]">${visitedCount}<small class="text-lg text-gray-300 font-normal ml-1">/ ${referenceShops.length}</small></span>
             </div>
             <div class="w-full h-4 bg-gray-100 rounded-full overflow-hidden">
@@ -217,12 +246,13 @@
                     <div class="w-24 h-24 rounded-[1.5rem] bg-gray-100 bg-cover bg-center" style="background-image:url('${shop.image}')"></div>
                     <div class="flex-1 ml-4 pr-4">
                       <h3 class="font-black text-lg leading-tight mb-1">${shop.name}</h3>
-                      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">${shop.address}</p>
+                      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">📍 ${shop.address}</p>
                       <div class="flex items-center justify-between">
-                        <span class="text-[10px] font-bold py-1 px-2 rounded-lg bg-red-50 text-[#ff6b6b] truncate max-w-[120px]">
-                          ${shop.special}
-                        </span>
-                        ${isVisited ? '<span class="text-[#ff6b6b] text-2xl font-black animate-bounce">✓</span>' : '<span class="text-gray-200 text-xs font-bold">詳細 ≫</span>'}
+                        <div class="flex items-center gap-1 text-[10px] font-bold py-1 px-2 rounded-lg bg-orange-50 text-orange-500">
+                          <span>🍴</span>
+                          <span class="truncate max-w-[120px]">${shop.food}</span>
+                        </div>
+                        ${isVisited ? '<span class="text-[#ff6b6b] text-2xl font-black animate-bounce">✓</span>' : '<span class="text-gray-200 text-[10px] font-bold">DETAIL ≫</span>'}
                       </div>
                     </div>
                   </div>
