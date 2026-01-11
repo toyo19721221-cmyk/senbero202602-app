@@ -31,8 +31,8 @@
   </div>
 
   <div id="detail-modal" class="hidden fixed inset-0 z-[2000] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeDetail()">
-    <div class="bg-white w-full max-sm rounded-3xl overflow-hidden shadow-2xl" onclick="event.stopPropagation()">
-      <div id="detail-image" class="w-full h-48 bg-gray-200 bg-cover bg-center"></div>
+    <div class="bg-white w-full max-w-sm max-h-[90vh] rounded-3xl overflow-y-auto shadow-2xl" onclick="event.stopPropagation()">
+      <div id="detail-image" class="w-full h-48 bg-gray-200 bg-cover bg-center shrink-0"></div>
       <div class="p-6">
         <h2 id="detail-name" class="text-2xl font-black mb-1"></h2>
         
@@ -48,7 +48,8 @@
         </div>
 
         <p id="detail-desc" class="text-sm leading-relaxed mb-6 text-gray-600"></p>
-        <button onclick="closeDetail()" class="w-full bg-gray-100 py-4 rounded-2xl font-bold text-gray-500">閉じる</button>
+        
+        <button onclick="closeDetail()" class="w-full bg-gray-100 py-4 rounded-2xl font-bold text-gray-500 sticky bottom-0 border-t border-gray-50 mt-4">閉じる</button>
       </div>
     </div>
   </div>
@@ -62,7 +63,7 @@
         tel: "092-332-9011",
         food: "おつまみ3種盛り合わせ", 
         qrCode: "MusicBarEn_1",
-        description: "音楽とお酒を楽しめる心地よい空間。前原の夜を彩るミュージックバーです。",
+        description: "音楽とお酒を楽しめる心地よい空間。前原の夜を彩るミュージックバーです。豊富なドリンクメニューと、厳選されたレコードの音色をお楽しみください。お一人様でもお気軽にお立ち寄りいただけるカウンター席もございます。",
         image: "en.jpg" 
       },
       { 
@@ -72,7 +73,7 @@
         tel: "092-324-1111", 
         food: "自家製ポテトサラダ & 乾き物", 
         qrCode: "RoseNoir_2",
-        description: "アットホームな雰囲気で、地元の方に愛されるスナックです。",
+        description: "アットホームな雰囲気で、地元の方に愛されるスナックです。歌って笑って、糸島の夜を一緒に楽しみましょう。初めての方も大歓迎です！",
         image: "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=400"
       },
       { 
@@ -82,7 +83,7 @@
         tel: "092-330-5000", 
         food: "糸島野菜のミニキッシュ", 
         qrCode: "Current_3",
-        description: "野北海岸を見渡す絶景カフェ＆レストラン。",
+        description: "野北海岸を見渡す絶景カフェ＆レストラン。糸島の新鮮な食材をふんだんに使ったお料理を提供しています。波の音を聴きながら、贅沢なひとときをお過ごしください。",
         image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400"
       }
     ];
@@ -155,6 +156,9 @@
       document.getElementById('detail-desc').innerText = shop.description;
       document.getElementById('detail-image').style.backgroundImage = "url('" + shop.image + "')";
       document.getElementById('detail-modal').classList.remove('hidden');
+      
+      // モーダルを開いた時に一番上にスクロールさせる
+      document.querySelector('#detail-modal > div').scrollTop = 0;
     }
 
     function closeDetail() { document.getElementById('detail-modal').classList.add('hidden'); }
