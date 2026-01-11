@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>センベロイベント - QRスキャナー完全版</title>
+  <title>センベロイベント - 詳細リンク付き</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&amp;display=swap" rel="stylesheet">
   <style>
     body { box-sizing: border-box; font-family: 'Zen Kaku Gothic New', sans-serif; }
-    .shop-card { transition: all 0.3s ease; }
+    .shop-card { transition: all 0.2s ease; cursor: pointer; }
+    .shop-card:active { transform: scale(0.98); }
     .shop-card.visited { border-color: #ff6b6b !important; background-color: #fff0f0 !important; }
     #video-container { position: relative; width: 100%; max-width: 500px; aspect-ratio: 1/1; overflow: hidden; border-radius: 1rem; border: 4px solid white; }
     #video { width: 100%; height: 100%; object-fit: cover; }
@@ -41,17 +42,37 @@
       text_color: "#2d3436"
     };
 
-    // 店舗データリスト（qrCodeの文字列が重要です）
+    // --- urlプロパティを追加しました ---
     const referenceShops = [
-      { id: "shop1", name: "居酒屋たぬき", address: "天神1-2-3", special: "生ビール300円", qrCode: "SHOP1_SECRET" },
-      { id: "shop2", name: "バル・エスパーニャ", address: "大名2-3-4", special: "タパス3品350円", qrCode: "SHOP2_SECRET" },
-      { id: "shop3", name: "立ち飲み富士", address: "今泉3-4-5", special: "日本酒1杯200円", qrCode: "SHOP3_SECRET" },
-      { id: "shop4", name: "餃子の王様", address: "渋谷4-5-6", special: "餃子5個250円", qrCode: "SHOP4_SECRET" },
-      { id: "shop5", name: "ワインバルUVA", address: "渋谷5-6-7", special: "グラスワイン300円", qrCode: "SHOP5_SECRET" }
+      { 
+        id: "shop1", 
+        name: "居酒屋たぬき", 
+        address: "天神1-2-3", 
+        special: "生ビール300円", 
+        qrCode: "SHOP1_SECRET",
+        url: "https://example.com/tanuki" // ここに詳細ページのURLを入れる
+      },
+      { 
+        id: "shop2", 
+        name: "バル・エスパーニャ", 
+        address: "大名2-3-4", 
+        special: "タパス3品350円", 
+        qrCode: "SHOP2_SECRET",
+        url: "https://example.com/espana"
+      },
+      { 
+        id: "shop3", 
+        name: "立ち飲み富士", 
+        address: "今泉3-4-5", 
+        special: "日本酒1杯200円", 
+        qrCode: "SHOP3_SECRET",
+        url: "https://example.com/fuji"
+      }
     ];
 
     let visitedShops = JSON.parse(localStorage.getItem('senbero_visited')) || [];
 
+    // --- カメラ・スキャナー機能 ---
     let videoStream = null;
     const video = document.getElementById('video');
     const canvasElement = document.getElementById('canvas');
@@ -66,7 +87,7 @@
         video.play();
         requestAnimationFrame(tick);
       } catch (err) {
-        alert("カメラの起動に失敗しました。設定を確認してください。");
+        alert("カメラの起動に失敗しました。");
         closeScanner();
       }
     }
@@ -85,46 +106,42 @@
         canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
         const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
         const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
-
-        if (code) {
-          handleQrResult(code.data);
-          return;
-        }
+        if (code) { handleQrResult(code.data); return; }
       }
       if (!document.getElementById('qr-modal').classList.contains('hidden')) {
         requestAnimationFrame(tick);
       }
     }
 
-    // --- ここが修正の核心部分です ---
     function handleQrResult(qrText) {
-      // 1. 読み取った文字から空白や改行を徹底的に除去
       const cleanQrText = qrText.trim();
-      
-      // 2. 一致する店舗を検索（データ側もtrimして比較）
       const shop = referenceShops.find(s => s.qrCode.trim() === cleanQrText);
 
       if (shop) {
         if (visitedShops.some(v => v.shop_id === shop.id)) {
-          alert('このお店は既に訪問済みです！');
+          alert('既に訪問済みです！');
           closeScanner();
         } else {
           visitedShops.push({ shop_id: shop.id, visited_at: new Date().toISOString() });
           localStorage.setItem('senbero_visited', JSON.stringify(visitedShops));
-          alert(`✓ ${shop.name} のスタンプを獲得しました！`);
+          alert(`✓ ${shop.name} 獲得！`);
           closeScanner();
           renderApp();
         }
       } else {
-        // 一致しない場合は、何が原因かを表示（不要になったらalertごと消してください）
-        alert("不一致：読み取った[" + cleanQrText + "]に対応するお店がリストにありません。");
-        // スキャンを継続
         requestAnimationFrame(tick);
       }
     }
 
+    // 詳細ページへ移動する関数
+    function goToDetail(url) {
+      if (url) {
+        window.location.href = url;
+      }
+    }
+
     function removeStamp(shopId, event) {
-      event.stopPropagation();
+      event.stopPropagation(); // 親要素のクリックイベント（詳細移動）を阻止
       if(confirm('スタンプを削除しますか？')) {
         visitedShops = visitedShops.filter(v => v.shop_id !== shopId);
         localStorage.setItem('senbero_visited', JSON.stringify(visitedShops));
@@ -145,14 +162,14 @@
           </header>
 
           <div class="sticky top-4 z-50 mb-8 flex justify-center">
-            <button onclick="openScanner()" class="bg-gradient-to-br from-[${config.primary_color}] to-[${config.accent_color}] text-white text-xl font-bold px-8 py-4 rounded-full shadow-xl transform active:scale-95 transition-transform flex items-center gap-2">
-              📸 QRコードを読み取る
+            <button onclick="openScanner()" class="bg-gradient-to-br from-[${config.primary_color}] to-[${config.accent_color}] text-white text-xl font-bold px-8 py-4 rounded-full shadow-xl flex items-center gap-2">
+              📸 QRスキャン
             </button>
           </div>
 
           <div class="bg-white rounded-2xl p-6 mb-8 shadow-md">
             <div class="flex justify-between items-end mb-3">
-              <span class="font-bold">現在のスタンプ数</span>
+              <span class="font-bold">獲得スタンプ</span>
               <span class="text-3xl font-black text-[${config.primary_color}]">${visitedCount}<small class="text-base text-gray-400 font-normal"> / ${referenceShops.length}</small></span>
             </div>
             <div class="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
@@ -164,20 +181,21 @@
             ${referenceShops.map(shop => {
               const isVisited = visitedShops.some(v => v.shop_id === shop.id);
               return `
-                <div class="shop-card bg-white p-5 rounded-xl shadow-sm border-2 ${isVisited ? 'visited border-[#ff6b6b]' : 'border-transparent'}">
+                <div onclick="goToDetail('${shop.url}')" class="shop-card bg-white p-5 rounded-xl shadow-sm border-2 ${isVisited ? 'visited border-[#ff6b6b]' : 'border-transparent'} relative">
                   <div class="flex justify-between items-start">
-                    <div>
+                    <div class="pr-8">
                       <h3 class="text-lg font-bold mb-1">${shop.name}</h3>
                       <p class="text-xs text-gray-500 mb-2">📍 ${shop.address}</p>
                       <span class="inline-block text-xs font-bold px-2 py-1 rounded-md bg-[${config.accent_color}]/20 text-[${config.primary_color}]">
                         ${shop.special}
                       </span>
+                      <p class="text-[10px] text-blue-400 mt-2">詳細を見る ≫</p>
                     </div>
                     <div class="flex flex-col items-center">
                        <div class="w-12 h-12 rounded-full border-2 flex items-center justify-center ${isVisited ? 'bg-[#ff6b6b] border-[#ff6b6b]' : 'border-gray-200'}">
                           ${isVisited ? '<span class="text-white text-2xl font-bold">✓</span>' : ''}
                        </div>
-                       ${isVisited ? `<button onclick="removeStamp('${shop.id}', event)" class="mt-2 text-[10px] text-gray-400 underline">削除</button>` : ''}
+                       ${isVisited ? `<button onclick="removeStamp('${shop.id}', event)" class="mt-2 text-[10px] text-gray-400 underline p-1">削除</button>` : ''}
                     </div>
                   </div>
                 </div>
