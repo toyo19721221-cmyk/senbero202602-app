@@ -102,6 +102,8 @@
     }
 
     function handleQrResult(qrText) {
+      // 読み取った文字をそのままアラートで表示させる（テスト用）
+  alert("読み取った文字: " + qrText);
       const shop = referenceShops.find(s => s.qrCode === qrText);
       if (shop) {
         if (visitedShops.some(v => v.shop_id === shop.id)) {
