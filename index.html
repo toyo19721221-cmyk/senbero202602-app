@@ -17,18 +17,16 @@
 </head>
 <body class="h-full">
   <div id="app" class="max-w-md mx-auto p-6 text-center">
-    <div class="w-32 h-32 mx-auto mb-4">
-      <img src="センベロ用アイコン.jpg" id="top-icon" class="w-full h-full rounded-3xl shadow-lg object-cover" onerror="handleIconError(this)">
-    </div>
     
-    <h1 class="text-3xl font-black text-[#ff6b6b] mb-8 italic">糸島センベロ 2026</h1>
+    <h1 class="text-3xl font-black text-[#ff6b6b] mt-10 mb-8 italic">糸島センベロ 2026</h1>
     
     <div class="flex flex-col gap-4 mb-10">
       <button onclick="openScanner()" class="bg-[#ff6b6b] text-white py-5 rounded-3xl font-bold shadow-xl text-xl active:scale-95 transition-transform">📸 スタンプを押す</button>
-      <button onclick="openMap()" class="bg-white text-[#ff6b6b] border-2 border-[#ff6b6b] py-4 rounded-3xl font-bold shadow-md active:scale-95 transition-transform text-lg">📍 加盟店マップを開く</button>
+      <button onclick="openMap()" class="bg-white text-[#ff6b6b] border-2 border-[#ff6b6b] py-4 rounded-3xl font-bold shadow-md active:scale-95 transition-transform">📍 加盟店マップを開く</button>
     </div>
 
-    <div id="shop-list" class="text-left pb-10"></div>
+    <div id="shop-list" class="text-left pb-10">
+      </div>
   </div>
 
   <div id="qr-modal">
@@ -38,14 +36,8 @@
   </div>
 
   <script>
-    // 【最重要】画像(image_174905.png)のIDを完全に反映した404エラー対策済みURL
-    // 前回の「/24」のような省略形ではなく、Googleの正式な形式に直しました
+    // 【重要】画像(image_174905.png)のIDを反映した閲覧専用URL
     const MAP_URL = "https://www.google.com/maps/d/viewer?mid=1Ccp-4uTNhhl-1C1Xq-Gq7_t9N6O7WvY";
-
-    function handleIconError(img) {
-      console.log("アイコン画像の読み込みに失敗しました。ファイル名が『センベロ用アイコン.jpg』であることを確認してください。");
-      img.src = "https://placehold.jp/24/ff6b6b/ffffff/200x200.png?text=Icon";
-    }
 
     const shops = [
       { id: "s1", name: "ビーチ食堂 Mr.BEACH", food: "ガーリックシュリンプ", qrCode: "BEACH_2026" },
@@ -55,10 +47,11 @@
     let visited = JSON.parse(localStorage.getItem('senbero_visited')) || [];
 
     function openMap() {
-      // 閲覧専用の正しいURLで開きます
+      // 404エラーを防ぐため、viewer形式のURLを新しいタブで開きます
       window.open(MAP_URL, '_blank');
     }
 
+    // --- スキャナー制御ロジック ---
     let stream = null;
     async function openScanner() {
       document.getElementById('qr-modal').style.display = 'flex';
@@ -69,7 +62,7 @@
         v.play();
         requestAnimationFrame(tick);
       } catch (e) {
-        alert("カメラを起動できませんでした。iPhone/Androidの設定でブラウザのカメラ使用を許可してください。");
+        alert("カメラを起動できませんでした。ブラウザの設定を確認してください。");
         closeScanner();
       }
     }
