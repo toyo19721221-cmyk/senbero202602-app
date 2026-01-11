@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>センベロ 2026 - スタンプラリー</title>
+  <title>糸島センベロ 2026 - スタンプラリー</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
     body { box-sizing: border-box; font-family: 'Zen Kaku Gothic New', sans-serif; -webkit-tap-highlight-color: transparent; }
     .shop-card { transition: all 0.2s ease; cursor: pointer; }
@@ -41,7 +41,9 @@
       <div id="detail-image" class="w-full h-48 bg-gray-200 bg-cover bg-center"></div>
       <div class="p-6">
         <h2 id="detail-name" class="text-2xl font-black mb-1"></h2>
+        
         <a id="detail-address-link" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-500 underline mb-4 block hover:text-blue-700 transition-colors"></a>
+        
         <div class="bg-orange-50 p-4 rounded-xl mb-4 border border-orange-100">
           <p class="text-xs font-bold text-orange-400 mb-1 uppercase tracking-widest">センベロ特典</p>
           <p id="detail-special" class="font-bold text-lg text-[#ff6b6b]"></p>
@@ -54,31 +56,43 @@
 
   <script>
     const config = {
-      event_title: "センベロ 2026",
+      event_title: "糸島センベロ 2026",
       primary_color: "#ff6b6b",
       accent_color: "#feca57"
     };
 
+    // 糸島市の実際の店舗データに更新
     const referenceShops = [
       { 
-        id: "shop1", name: "居酒屋たぬき", address: "福岡県福岡市中央区天神1-2-3", special: "生ビール300円", qrCode: "SHOP1_SECRET",
-        description: "昭和レトロな雰囲気が自慢のお店。名物の手羽先唐揚げとビールの相性は抜群です！",
-        image: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400"
+        id: "itoshima_1", 
+        name: "糸島旬送和食 ぎんごんちゃん。", 
+        address: "福岡県糸島市界2-19-11", 
+        special: "おつまみ3種盛り合わせ", 
+        qrCode: "Gingon_Itoshima_2026",
+        description: "地元糸島の新鮮な魚介と野菜をふんだんに使った和食処。落ち着いた雰囲気で食事が楽しめます。",
+        image: "https://images.unsplash.com/photo-1579027989536-b7b1f875659b?w=400"
       },
       { 
-        id: "shop2", name: "バル・エスパーニャ", address: "福岡県福岡市中央区大名2-3-4", special: "タパス3品350円", qrCode: "SHOP2_SECRET",
-        description: "本格的なスペイン料理をリーズナブルに。自家製サングリアも人気です。",
-        image: "https://images.unsplash.com/photo-1534353436294-0dbd4bdac845?w=400"
+        id: "itoshima_2", 
+        name: "居酒屋 武蔵", 
+        address: "福岡県糸島市前原中央2-2-22", 
+        special: "ハイボール1杯 サービス", 
+        qrCode: "Musashi_Itoshima_2026",
+        description: "筑前前原駅から徒歩スグ！活気あふれる店内で、地産地消のこだわりメニューをどうぞ。",
+        image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400"
       },
       { 
-        id: "shop3", name: "立ち飲み富士", address: "福岡県福岡市中央区今泉3-4-5", special: "日本酒1杯200円", qrCode: "SHOP3_SECRET",
-        description: "仕事帰りにサクッと寄れる立ち飲みスタイル。地元の銘酒を取り揃えています。",
-        image: "https://images.unsplash.com/photo-1583155702164-6a8a5426ef7a?w=400"
+        id: "itoshima_3", 
+        name: "CURRENT (カレント)", 
+        address: "福岡県糸島市志摩野北2290", 
+        special: "自家製ミニデザート", 
+        qrCode: "Current_Itoshima_2026",
+        description: "野北海岸を見渡す絶景カフェ＆レストラン。テラス席で糸島の風を感じながら贅沢なひとときを。",
+        image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400"
       }
     ];
 
     let visitedShops = JSON.parse(localStorage.getItem('senbero_visited')) || [];
-
     let videoStream = null;
     const video = document.getElementById('video');
     const canvasElement = document.getElementById('canvas');
@@ -93,7 +107,7 @@
         video.play();
         requestAnimationFrame(tick);
       } catch (err) {
-        alert("カメラの起動に失敗しました。ブラウザの設定でカメラを許可してください。");
+        alert("カメラの起動に失敗しました。");
         closeScanner();
       }
     }
@@ -116,24 +130,18 @@
     }
 
     function handleQrResult(qrText) {
-      const cleanQrText = qrText.trim();
-      const shop = referenceShops.find(s => s.qrCode.trim() === cleanQrText);
-
+      const shop = referenceShops.find(s => s.qrCode === qrText.trim());
       if (shop) {
         if (visitedShops.some(v => v.shop_id === shop.id)) {
-          alert('既に訪問済みです！');
+          alert('既にスタンプを獲得しています！');
           closeScanner();
         } else {
           visitedShops.push({ shop_id: shop.id, visited_at: new Date().toISOString() });
           localStorage.setItem('senbero_visited', JSON.stringify(visitedShops));
           closeScanner();
           renderApp();
-          
-          if (visitedShops.length === referenceShops.length) {
-            celebrateComplete();
-          } else {
-            alert(`✓ ${shop.name} のスタンプを獲得！`);
-          }
+          if (visitedShops.length === referenceShops.length) celebrateComplete();
+          else alert(`✓ ${shop.name} のスタンプを獲得！`);
         }
       } else {
         requestAnimationFrame(tick);
@@ -145,14 +153,13 @@
       if (!shop) return;
       document.getElementById('detail-name').innerText = shop.name;
       
-      // 修正箇所：住所とGoogleマップへのリンク設定
+      // 住所リンクの設定
       const addressLink = document.getElementById('detail-address-link');
       addressLink.innerText = "📍 " + shop.address;
-      // Googleマップ検索URLを生成
       addressLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shop.name + " " + shop.address)}`;
       
       document.getElementById('detail-special').innerText = shop.special;
-      document.getElementById('detail-desc').innerText = shop.description || "お店の詳細情報は準備中です。";
+      document.getElementById('detail-desc').innerText = shop.description;
       document.getElementById('detail-image').style.backgroundImage = `url('${shop.image}')`;
       document.getElementById('detail-modal').classList.remove('hidden');
     }
@@ -162,20 +169,8 @@
     }
 
     function celebrateComplete() {
-      const duration = 5 * 1000;
-      const animationEnd = Date.now() + duration;
-      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 5000 };
-      function randomInRange(min, max) { return Math.random() * (max - min) + min; }
-
-      const interval = setInterval(function() {
-        const timeLeft = animationEnd - Date.now();
-        if (timeLeft <= 0) return clearInterval(interval);
-        const particleCount = 50 * (timeLeft / duration);
-        confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
-        confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
-      }, 250);
-      
-      setTimeout(() => alert("🎉 おめでとうございます！全店舗制覇しました！"), 500);
+      confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, zIndex: 5000 });
+      setTimeout(() => alert("🎉 糸島制覇！おめでとうございます！"), 500);
     }
 
     function removeStamp(shopId, event) {
@@ -195,28 +190,4 @@
         <div class="max-w-2xl mx-auto p-6">
           <header class="text-center mb-10 mt-6">
             <h1 class="text-4xl font-black mb-2 italic" style="color:${config.primary_color}">${config.event_title}</h1>
-            <p class="text-xs font-bold bg-[#feca57] inline-block px-4 py-1 rounded-full uppercase tracking-tighter">Stamp Rally</p>
-          </header>
-
-          <div class="sticky top-4 z-50 mb-8 flex justify-center">
-            <button onclick="openScanner()" class="bg-[#ff6b6b] text-white text-xl font-bold px-8 py-5 rounded-full shadow-2xl active:scale-90 transition-transform flex items-center gap-3">
-              <span class="text-2xl">📸</span> QRコードを読み取る
-            </button>
-          </div>
-
-          <div class="bg-white rounded-[2.5rem] p-8 mb-8 shadow-xl border-4 border-white">
-            <div class="flex justify-between items-end mb-4">
-              <span class="font-black text-gray-400">STATUS</span>
-              <span class="text-4xl font-black text-[#ff6b6b]">${visitedCount}<small class="text-lg text-gray-300 font-normal ml-1">/ ${referenceShops.length}</small></span>
-            </div>
-            <div class="w-full h-4 bg-gray-100 rounded-full overflow-hidden">
-              <div class="h-full bg-gradient-to-r from-[#ff6b6b] to-[#feca57] transition-all duration-1000" style="width:${progressPercent}%"></div>
-            </div>
-          </div>
-
-          <div class="grid gap-6">
-            ${referenceShops.map(shop => {
-              const isVisited = visitedShops.some(v => v.shop_id === shop.id);
-              return `
-                <div onclick="openDetail('${shop.id}')" class="shop-card bg-white p-2 rounded-[2rem] shadow-lg border-4 ${isVisited ? 'border-[#ff6b6b]' : 'border-white'} relative overflow-hidden">
-                  <div class="flex items-
+            <p class="text-xs font-bold bg-[#feca57] inline-block px-4 py-1 rounded-full uppercase tracking-tighter text-white">ITOSHIMA STAMP R
