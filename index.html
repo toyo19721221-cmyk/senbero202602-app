@@ -41,7 +41,7 @@
       <div id="detail-image" class="w-full h-48 bg-gray-200 bg-cover bg-center"></div>
       <div class="p-6">
         <h2 id="detail-name" class="text-2xl font-black mb-1"></h2>
-        <p id="detail-address" class="text-sm text-gray-500 mb-4"></p>
+        <a id="detail-address-link" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-500 underline mb-4 block hover:text-blue-700 transition-colors"></a>
         <div class="bg-orange-50 p-4 rounded-xl mb-4 border border-orange-100">
           <p class="text-xs font-bold text-orange-400 mb-1 uppercase tracking-widest">センベロ特典</p>
           <p id="detail-special" class="font-bold text-lg text-[#ff6b6b]"></p>
@@ -61,17 +61,17 @@
 
     const referenceShops = [
       { 
-        id: "shop1", name: "居酒屋たぬき", address: "天神1-2-3", special: "生ビール300円", qrCode: "SHOP1_SECRET",
+        id: "shop1", name: "居酒屋たぬき", address: "福岡県福岡市中央区天神1-2-3", special: "生ビール300円", qrCode: "SHOP1_SECRET",
         description: "昭和レトロな雰囲気が自慢のお店。名物の手羽先唐揚げとビールの相性は抜群です！",
         image: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400"
       },
       { 
-        id: "shop2", name: "バル・エスパーニャ", address: "大名2-3-4", special: "タパス3品350円", qrCode: "SHOP2_SECRET",
+        id: "shop2", name: "バル・エスパーニャ", address: "福岡県福岡市中央区大名2-3-4", special: "タパス3品350円", qrCode: "SHOP2_SECRET",
         description: "本格的なスペイン料理をリーズナブルに。自家製サングリアも人気です。",
         image: "https://images.unsplash.com/photo-1534353436294-0dbd4bdac845?w=400"
       },
       { 
-        id: "shop3", name: "立ち飲み富士", address: "今泉3-4-5", special: "日本酒1杯200円", qrCode: "SHOP3_SECRET",
+        id: "shop3", name: "立ち飲み富士", address: "福岡県福岡市中央区今泉3-4-5", special: "日本酒1杯200円", qrCode: "SHOP3_SECRET",
         description: "仕事帰りにサクッと寄れる立ち飲みスタイル。地元の銘酒を取り揃えています。",
         image: "https://images.unsplash.com/photo-1583155702164-6a8a5426ef7a?w=400"
       }
@@ -144,7 +144,13 @@
       const shop = referenceShops.find(s => s.id === shopId);
       if (!shop) return;
       document.getElementById('detail-name').innerText = shop.name;
-      document.getElementById('detail-address').innerText = "📍 " + shop.address;
+      
+      // 修正箇所：住所とGoogleマップへのリンク設定
+      const addressLink = document.getElementById('detail-address-link');
+      addressLink.innerText = "📍 " + shop.address;
+      // Googleマップ検索URLを生成
+      addressLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shop.name + " " + shop.address)}`;
+      
       document.getElementById('detail-special').innerText = shop.special;
       document.getElementById('detail-desc').innerText = shop.description || "お店の詳細情報は準備中です。";
       document.getElementById('detail-image').style.backgroundImage = `url('${shop.image}')`;
@@ -213,29 +219,4 @@
               const isVisited = visitedShops.some(v => v.shop_id === shop.id);
               return `
                 <div onclick="openDetail('${shop.id}')" class="shop-card bg-white p-2 rounded-[2rem] shadow-lg border-4 ${isVisited ? 'border-[#ff6b6b]' : 'border-white'} relative overflow-hidden">
-                  <div class="flex items-center">
-                    <div class="w-24 h-24 rounded-[1.5rem] bg-gray-100 bg-cover bg-center" style="background-image:url('${shop.image}')"></div>
-                    <div class="flex-1 ml-4 pr-4">
-                      <h3 class="font-black text-lg leading-tight mb-1">${shop.name}</h3>
-                      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">${shop.address}</p>
-                      <div class="flex items-center justify-between">
-                        <span class="text-[10px] font-bold py-1 px-2 rounded-lg bg-red-50 text-[#ff6b6b] truncate max-w-[120px]">
-                          ${shop.special}
-                        </span>
-                        ${isVisited ? '<span class="text-[#ff6b6b] text-2xl font-black animate-bounce">✓</span>' : '<span class="text-gray-200 text-xs font-bold">詳細 ≫</span>'}
-                      </div>
-                    </div>
-                  </div>
-                  ${isVisited ? `<button onclick="removeStamp('${shop.id}', event)" class="absolute top-2 right-4 text-[10px] text-gray-300 underline p-2">削除</button>` : ''}
-                </div>
-              `;
-            }).join('')}
-          </div>
-        </div>
-      `;
-    }
-
-    renderApp();
-  </script>
-</body>
-</html>
+                  <div class="flex items-
