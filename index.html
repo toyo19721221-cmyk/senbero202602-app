@@ -9,104 +9,103 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Zen Kaku Gothic New', sans-serif; background-color: #fff5e6; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    .shop-card { background: white; border-radius: 1.5rem; border: 2px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 1rem; cursor: pointer; transition: transform 0.1s; }
-    .shop-card:active { transform: scale(0.97); }
-    .shop-card.visited { border-color: #ff6b6b; background-color: #fff0f0; }
-    #detail-panel { position: fixed; bottom: 0; left: 0; right: 0; background: white; z-index: 5000; transform: translateY(100%); transition: transform 0.3s ease-out; border-radius: 2rem 2rem 0 0; box-shadow: 0 -10px 25px rgba(0,0,0,0.1); }
+    body { font-family: 'Zen Kaku Gothic New', sans-serif; background-color: #fff5e6; margin: 0; padding: 0; }
+    .shop-card { background: white; border-radius: 1.2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 1rem; cursor: pointer; }
+    .shop-card.visited { border: 2px solid #ff6b6b; background-color: #fff0f0; }
+    #detail-panel { position: fixed; bottom: 0; left: 0; right: 0; background: white; z-index: 5000; transform: translateY(100%); transition: transform 0.3s; border-radius: 2rem 2rem 0 0; }
     #detail-panel.open { transform: translateY(0); }
-    #qr-modal { display: none; position: fixed; inset: 0; z-index: 6000; background: rgba(0,0,0,0.95); flex-direction: column; align-items: center; justify-content: center; }
-    #video { width: 80%; max-width: 300px; border-radius: 2rem; border: 4px solid white; }
+    #qr-modal { display: none; position: fixed; inset: 0; z-index: 6000; background: rgba(0,0,0,0.9); flex-direction: column; align-items: center; justify-content: center; }
+    #video { width: 85%; max-width: 300px; border-radius: 1.5rem; border: 3px solid white; }
   </style>
 </head>
 <body>
-  <div id="app" class="max-w-md mx-auto p-6 text-center">
-    <h1 class="text-3xl font-black text-[#ff6b6b] mt-8 mb-8 italic">糸島センベロ 2026</h1>
+  <div class="max-w-md mx-auto p-6">
+    <h1 class="text-3xl font-black text-[#ff6b6b] text-center my-8 italic">糸島センベロ 2026</h1>
     
-    <div class="flex flex-col gap-4 mb-10">
-      <button onclick="handleScannerOpen()" class="bg-[#ff6b6b] text-white py-5 rounded-3xl font-bold shadow-xl text-xl active:opacity-80">📸 スタンプを押す</button>
-      <button onclick="handleMapOpen()" class="bg-white text-[#ff6b6b] border-2 border-[#ff6b6b] py-4 rounded-3xl font-bold shadow-md">📍 全体マップを開く</button>
+    <div class="grid grid-cols-1 gap-4 mb-10">
+      <button onclick="openScanner()" class="bg-[#ff6b6b] text-white py-5 rounded-3xl font-bold shadow-xl text-xl active:scale-95 transition">📸 スタンプを押す</button>
+      <button onclick="openFullMap()" class="bg-white text-[#ff6b6b] border-2 border-[#ff6b6b] py-4 rounded-3xl font-bold shadow-md active:scale-95 transition">📍 全体マップを開く</button>
     </div>
 
-    <div id="shop-list" class="text-left pb-20">
-      </div>
+    <div id="shop-list"></div>
   </div>
 
-  <div id="qr-modal" id="qrModal">
+  <div id="qr-modal">
+    <h2 class="text-white font-bold mb-4 text-xl">QRコードをスキャン</h2>
     <video id="video" playsinline></video>
     <canvas id="canvas" style="display:none;"></canvas>
-    <button onclick="handleScannerClose()" class="mt-10 bg-white text-black px-10 py-3 rounded-full font-bold">戻る</button>
+    <button onclick="closeScanner()" class="mt-10 bg-white text-black px-12 py-3 rounded-full font-bold">戻る</button>
   </div>
 
-  <div id="detail-overlay" onclick="handleDetailClose()" style="display:none;" class="fixed inset-0 bg-black/50 z-[4000]"></div>
-  <div id="detail-panel">
-    <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto my-4"></div>
-    <div id="detail-content" class="p-8 pt-0"></div>
-    <div class="px-8 pb-8">
-      <button onclick="handleDetailClose()" class="w-full bg-gray-100 py-4 rounded-2xl font-bold text-gray-500">閉じる</button>
-    </div>
+  <div id="detail-overlay" onclick="closeDetail()" style="display:none;" class="fixed inset-0 bg-black/50 z-[4000]"></div>
+  <div id="detail-panel" class="p-8 shadow-2xl">
+    <div id="detail-content"></div>
+    <button onclick="closeDetail()" class="w-full bg-gray-100 py-4 rounded-2xl font-bold text-gray-500 mt-6">閉じる</button>
   </div>
 
   <script>
-    // --- データ定義 ---
-    const MAP_URL_ALL = "https://www.google.com/maps/d/viewer?mid=1Ccp-4uTNhhl-1C1Xq-Gq7_t9N6O7WvY";
+    // --- 1. マップURLの修正 (404回避) ---
+    const FULL_MAP_URL = "https://www.google.com/maps/d/viewer?mid=1Ccp-4uTNHh-fC930-mQ9lXv_Q_P90Xk";
+
+    // --- 2. 店舗データの定義 (住所を追加) ---
     const shops = [
-      { id: "s1", name: "ビーチ食堂 Mr.BEACH", food: "ガーリックシュリンプ", tel: "092-321-4925", address: "福岡県糸島市前原中央2-1-21", qrCode: "BEACH_2026", mapUrl: "https://maps.app.goo.gl/9vCgB1xXG8m1nU1Z7" },
-      { id: "s2", name: "SHIMA", food: "糸島野菜の天ぷら", tel: "092-321-4925", address: "福岡県糸島市前原中央3-20-19", qrCode: "SHIMA_2026", mapUrl: "https://maps.app.goo.gl/vS88mYn7Z7YF7Z7Z7" }
+      { id: "s1", name: "ビーチ食堂 Mr.BEACH", food: "ガーリックシュリンプ", address: "福岡県糸島市前原中央2-1-21", tel: "092-321-4925", qrCode: "BEACH_2026", mapUrl: "https://maps.app.goo.gl/9ZpC6H8m9qQ2" },
+      { id: "s2", name: "SHIMA", food: "糸島野菜の天ぷら", address: "福岡県糸島市前原中央3-20-19", tel: "092-321-4925", qrCode: "SHIMA_2026", mapUrl: "https://maps.app.goo.gl/XYZ123" }
     ];
 
     let visited = JSON.parse(localStorage.getItem('senbero_visited')) || [];
 
-    // --- 関数定義（確実にグローバルに配置） ---
-    window.handleMapOpen = function() {
-      window.open(MAP_URL_ALL, '_blank');
-    };
+    function openFullMap() { window.open(FULL_MAP_URL, '_blank'); }
 
-    window.handleDetailOpen = function(id) {
+    function openDetail(id) {
       const shop = shops.find(s => s.id === id);
       const isVisited = visited.some(v => v.id === id);
-      const content = document.getElementById('detail-content');
-      content.innerHTML = `
+      document.getElementById('detail-content').innerHTML = `
         <div class="text-center">
-          <div class="text-5xl mb-4">${isVisited ? '✅' : '🏠'}</div>
+          <div class="text-5xl mb-3">${isVisited ? '✅' : '🏠'}</div>
           <h2 class="text-2xl font-black mb-1">${shop.name}</h2>
           <p class="text-[#ff6b6b] font-bold mb-4">🍴 ${shop.food}</p>
+          <div class="text-left bg-gray-50 p-4 rounded-xl mb-6 text-sm text-gray-600">
+            <p class="mb-1"><strong>📍 住所:</strong><br>${shop.address}</p>
+            <p><strong>📞 電話:</strong> ${shop.tel}</p>
+          </div>
           <div class="flex flex-col gap-3">
-            <a href="tel:${shop.tel}" class="bg-green-500 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2">📞 電話で問合せ</a>
-            <a href="${shop.mapUrl}" target="_blank" class="bg-blue-500 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2">🗺️ 地図アプリで開く</a>
+            <a href="tel:${shop.tel}" class="bg-green-500 text-white py-4 rounded-2xl font-bold flex items-center justify-center">📞 電話をかける</a>
+            <a href="${shop.mapUrl}" target="_blank" class="bg-blue-500 text-white py-4 rounded-2xl font-bold flex items-center justify-center">🗺️ Googleマップで見る</a>
           </div>
         </div>
       `;
       document.getElementById('detail-overlay').style.display = 'block';
       document.getElementById('detail-panel').classList.add('open');
-    };
+    }
 
-    window.handleDetailClose = function() {
+    function closeDetail() {
       document.getElementById('detail-overlay').style.display = 'none';
       document.getElementById('detail-panel').classList.remove('open');
-    };
+    }
 
-    // --- スキャナー処理 ---
+    // --- 3. QRスキャナーの実装 ---
     let stream = null;
-    window.handleScannerOpen = async function() {
+    async function openScanner() {
       const modal = document.getElementById('qr-modal');
       modal.style.display = 'flex';
       try {
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
         const video = document.getElementById('video');
         video.srcObject = stream;
+        video.setAttribute("playsinline", true);
         video.play();
         requestAnimationFrame(tick);
       } catch (err) {
-        alert("カメラの許可が必要です");
-        handleScannerClose();
+        alert("カメラの利用を許可してください");
+        closeScanner();
       }
-    };
+    }
 
-    window.handleScannerClose = function() {
+    function closeScanner() {
       document.getElementById('qr-modal').style.display = 'none';
       if (stream) stream.getTracks().forEach(t => t.stop());
-    };
+    }
 
     function tick() {
       const video = document.getElementById('video');
@@ -116,7 +115,9 @@
         canvas.width = video.videoWidth;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const code = jsQR(ctx.getImageData(0, 0, canvas.width, canvas.height).data, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+        
         if (code) {
           const shop = shops.find(s => s.qrCode === code.data.trim());
           if (shop && !visited.some(v => v.id === shop.id)) {
@@ -124,8 +125,9 @@
             localStorage.setItem('senbero_visited', JSON.stringify(visited));
             render();
             confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            alert(shop.name + "のスタンプをGETしました！");
           }
-          handleScannerClose();
+          closeScanner();
           return;
         }
       }
@@ -135,20 +137,19 @@
     function render() {
       const list = document.getElementById('shop-list');
       list.innerHTML = shops.map(s => `
-        <div onclick="handleDetailOpen('${s.id}')" class="shop-card p-5 flex items-center ${visited.some(v => v.id === s.id) ? 'visited' : ''}">
+        <div onclick="openDetail('${s.id}')" class="shop-card p-5 flex items-center ${visited.some(v => v.id === s.id) ? 'visited' : ''}">
           <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-xl">
             ${visited.some(v => v.id === s.id) ? '✅' : '🏠'}
           </div>
-          <div class="ml-4 flex-1">
+          <div class="ml-4 flex-1 text-left">
             <h3 class="font-bold text-lg">${s.name}</h3>
-            <p class="text-sm text-gray-500 italic">🍴 ${s.food}</p>
+            <p class="text-xs text-gray-400">📍 ${s.address.substring(0, 12)}...</p>
           </div>
-          <span class="text-gray-300 font-bold">〉</span>
+          <span class="text-gray-300">〉</span>
         </div>
       `).join('');
     }
 
-    // 起動時に実行
     render();
   </script>
 </body>
