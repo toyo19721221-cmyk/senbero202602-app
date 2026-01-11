@@ -50,12 +50,12 @@
     const referenceShops = [
       { 
         id: "itoshima_1", 
-        name: "和食処 ぎんごんちゃん。", 
-        address: "福岡県糸島市界2-19-11", 
-        special: "おつまみ3種盛り合わせ", 
-        qrCode: "Gingon_1",
-        description: "地元糸島の新鮮な魚介と野菜をふんだんに使った和食処。",
-        image: "https://images.unsplash.com/photo-1579027989536-b7b1f875659b?w=400"
+        name: "music bar en ミュージックバー エン/縁", 
+        address: "福岡県糸島市前原中央2-1-21", 
+        special: "おすすめドリンク1杯サービス", 
+        qrCode: "MusicBarEn_1",
+        description: "音楽とお酒を楽しめる心地よい空間。前原の夜を彩るミュージックバーです。",
+        image: "https://images.unsplash.com/photo-1514525253361-bee8a19740c1?w=400"
       },
       { 
         id: "itoshima_2", 
@@ -125,9 +125,14 @@
       const shop = referenceShops.find(s => s.id === shopId);
       if (!shop) return;
       document.getElementById('detail-name').innerText = shop.name;
+      
       const addressLink = document.getElementById('detail-address-link');
       addressLink.innerText = "📍 " + shop.address;
-      addressLink.href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(shop.name + " " + shop.address);
+      
+      // ピンポイント表示用の公式検索URL（クエリに店名と住所を含めることで精度を高めています）
+      const query = encodeURIComponent(shop.name + " " + shop.address);
+      addressLink.href = "https://www.google.com/maps/search/?api=1&query=" + query;
+      
       document.getElementById('detail-special').innerText = shop.special;
       document.getElementById('detail-desc').innerText = shop.description;
       document.getElementById('detail-image').style.backgroundImage = "url('" + shop.image + "')";
