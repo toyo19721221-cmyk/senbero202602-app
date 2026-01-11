@@ -13,6 +13,8 @@
     .shop-card { transition: all 0.2s ease; cursor: pointer; border-radius: 2rem; border: 2px solid white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
     .shop-card:active { transform: scale(0.97); }
     .shop-card.visited { border-color: #ff6b6b; background-color: #fff0f0; }
+    /* アイコンが表示されない時のための背景色 */
+    .icon-placeholder { background: linear-gradient(135deg, #ff6b6b, #feca57); display: flex; align-items: center; justify-content: center; color: white; font-weight: 900; }
     #video-container { position: relative; width: 100%; max-width: 400px; aspect-ratio: 1/1; overflow: hidden; border-radius: 2rem; border: 4px solid white; }
     .scan-line { position: absolute; width: 100%; height: 3px; background: #ff6b6b; top: 0; left: 0; animation: scan 2s linear infinite; }
     @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
@@ -44,14 +46,15 @@
 
   <script>
     const config = {
-      // ↓↓↓ ここに「ステップ1」で取得したマイマップの共有URLを貼り付けてください ↓↓↓
-      map_url: "https://www.google.com/maps/d/edit?mid=1Ccp-4uTNhhVQIScUex6iDbBdVL_Ilu0&usp=sharing"
+      // ステップ1で取得したマイマップの共有URL
+      map_url: "https://www.google.com/maps/d/viewer?mid=YOUR_MY_MAP_ID",
+      // アイコン画像ファイル名（index.htmlと同じ場所に保存してください）
+      icon_image: "センベロ用アイコン.jpg"
     };
 
     const shops = [
       { id: "s1", name: "ビーチ食堂 Mr.BEACH", address: "糸島市前原中央2-1-21", tel: "092-321-3118", food: "ガーリックシュリンプ", qrCode: "BEACH_2026", image: "https://images.unsplash.com/photo-1559740064-c6b367bd1918?w=400" },
       { id: "s2", name: "SHIMA", address: "糸島市前原中央3-20-19", tel: "092-324-4168", food: "糸島野菜の天ぷら", qrCode: "SHIMA_2026", image: "https://images.unsplash.com/photo-1534422298391-e4f8c170db06?w=400" }
-      // ※ 他の店舗も同様に追加可能です
     ];
 
     let visited = JSON.parse(localStorage.getItem('senbero_visited')) || [];
@@ -109,7 +112,15 @@
       const app = document.getElementById('app');
       app.innerHTML = `
         <div class="max-w-md mx-auto p-6 text-center">
-          <img src="センベロ用アイコン.jpg" class="w-32 h-32 mx-auto rounded-3xl shadow-lg mb-4 object-cover">
+          <div class="w-32 h-32 mx-auto mb-4 relative">
+            <img src="${config.icon_image}" 
+                 class="w-full h-full rounded-3xl shadow-lg object-cover relative z-10"
+                 onerror="this.style.display='none'">
+            <div class="absolute inset-0 rounded-3xl shadow-lg icon-placeholder z-0 text-2xl">
+              Senbero
+            </div>
+          </div>
+          
           <h1 class="text-3xl font-black text-[#ff6b6b] mb-8 italic">糸島センベロ 2026</h1>
           
           <div class="flex flex-col gap-4 mb-10">
