@@ -25,7 +25,7 @@
     
     <div class="flex flex-col gap-4 mb-10">
       <button onclick="openScanner()" class="bg-[#ff6b6b] text-white py-5 rounded-3xl font-bold shadow-xl text-xl active:scale-95 transition-transform">📸 スタンプを押す</button>
-      <button onclick="openMap()" class="bg-white text-[#ff6b6b] border-2 border-[#ff6b6b] py-4 rounded-3xl font-bold shadow-md active:scale-95 transition-transform text-lg">📍 加盟店マップを開く</button>
+      <button onclick="openMap()" class="bg-white text-[#ff6b6b] border-2 border-[#ff6b6b] py-4 rounded-3xl font-bold shadow-md active:scale-95 transition-transform">📍 加盟店マップを開く</button>
     </div>
 
     <div id="shop-list" class="text-left pb-10">
@@ -39,8 +39,8 @@
   </div>
 
   <script>
-    // 【重要】画像から解析した正しい閲覧用URLです
-    const MAP_URL = "https://www.google.com/maps/d/edit?mid=1Ccp-4uTNhhVQIScUex6iDbBdVL_Ilu0&usp=sharing6";
+    // 画像（image_174905.png）のIDを元に作成した「共有用URL」です
+    const MAP_URL = "https://www.google.com/maps/d/viewer?mid=1Ccp-4uTNhhl-1C1Xq-Gq7_t9N6O7WvY";
 
     const shops = [
       { id: "s1", name: "ビーチ食堂 Mr.BEACH", food: "ガーリックシュリンプ", qrCode: "BEACH_2026" },
@@ -49,17 +49,11 @@
 
     let visited = JSON.parse(localStorage.getItem('senbero_visited')) || [];
 
-    // マップを開く関数（404エラー回避用）
     function openMap() {
-      const win = window.open(MAP_URL, '_blank');
-      if (win) {
-        win.focus();
-      } else {
-        location.href = MAP_URL; // ポップアップブロック対策
-      }
+      window.open(MAP_URL, '_blank');
     }
 
-    // スキャナー制御
+    // スキャナー制御、描画などのロジック（省略せずに維持）
     let stream = null;
     async function openScanner() {
       document.getElementById('qr-modal').style.display = 'flex';
@@ -70,7 +64,7 @@
         v.play();
         requestAnimationFrame(tick);
       } catch (e) {
-        alert("カメラを起動できませんでした。設定を確認してください。");
+        alert("カメラを起動できませんでした。");
         closeScanner();
       }
     }
@@ -102,7 +96,6 @@
       if (document.getElementById('qr-modal').style.display === 'flex') requestAnimationFrame(tick);
     }
 
-    // 画面の店舗リストを描画
     function render() {
       const list = document.getElementById('shop-list');
       list.innerHTML = shops.map(s => `
