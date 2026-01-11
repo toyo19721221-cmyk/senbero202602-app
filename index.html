@@ -17,161 +17,39 @@
     #video { width: 100%; height: 100%; object-fit: cover; }
     .scan-line { position: absolute; width: 100%; height: 3px; background: #ff6b6b; top: 0; left: 0; animation: scan 2s linear infinite; box-shadow: 0 0 8px #ff6b6b; }
     @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
-    /* マップ表示エリアのスタイル */
+    
+    /* マップ画面のレイアウト */
     #map-container { display: none; position: fixed; inset: 0; z-index: 4000; background: white; flex-direction: column; }
     #map-canvas { flex: 1; width: 100%; }
+    
+    .modal-enter { animation: modalFadeIn 0.3s ease-out; }
+    @keyframes modalFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body class="h-full bg-[#fff5e6] text-[#2d3436]">
   <div id="app" class="w-full h-full overflow-auto pb-24"></div>
 
   <div id="map-container">
-    <div class="p-4 flex items-center justify-between border-b bg-white">
-      <h2 class="font-black text-lg">加盟店マップ</h2>
-      <button onclick="closeMap()" class="bg-gray-100 px-4 py-2 rounded-full text-sm font-bold">閉じる</button>
+    <div class="p-4 flex items-center justify-between border-b bg-white shadow-sm z-10">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">📍</span>
+        <h2 class="font-black text-lg">加盟店マップ</h2>
+      </div>
+      <button onclick="closeMap()" class="bg-gray-100 px-6 py-2 rounded-full text-sm font-bold text-gray-600 active:scale-95 transition-transform">閉じる</button>
     </div>
     <div id="map-canvas"></div>
   </div>
 
   <div id="qr-modal" class="hidden fixed inset-0 z-[3000] bg-black/90 flex flex-col items-center justify-center p-6">
-    <div id="video-container"><video id="video"></video><div class="scan-line"></div></div>
+    <div id="video-container">
+      <video id="video"></video>
+      <div class="scan-line"></div>
+    </div>
     <div class="mt-8 text-white text-center">
       <h2 class="text-xl font-bold mb-2">QRコードをスキャン中...</h2>
-      <button onclick="closeScanner()" class="mt-6 bg-white text-black px-12 py-3 rounded-full font-bold">戻る</button>
+      <button onclick="closeScanner()" class="mt-6 bg-white text-black px-12 py-3 rounded-full font-bold shadow-lg">戻る</button>
     </div>
     <canvas id="canvas" hidden></canvas>
   </div>
 
-  <div id="detail-modal" class="hidden fixed inset-0 z-[2000] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeDetail()">
-    <div class="bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl" onclick="event.stopPropagation()">
-      <div id="detail-image" class="w-full h-48 bg-gray-200 bg-cover bg-center"></div>
-      <div class="p-6">
-        <h2 id="detail-name" class="text-2xl font-black mb-1"></h2>
-        <div class="flex items-center justify-between mb-4">
-          <p id="detail-address" class="text-sm text-gray-500"></p>
-          <a id="detail-tel-link" href="" class="bg-green-500 text-white p-2 rounded-full">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-            </svg>
-          </a>
-        </div>
-        <div class="bg-orange-50 p-4 rounded-xl mb-4 border border-orange-100">
-          <p id="detail-food" class="font-bold text-lg text-[#ff6b6b]"></p>
-        </div>
-        <p id="detail-desc" class="text-sm text-gray-600 mb-6"></p>
-        <button onclick="closeDetail()" class="w-full bg-gray-100 py-4 rounded-2xl font-bold">閉じる</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // 1. ここにMap Style WizardのJSONを貼り付けてください
-    const myMapStyle = []; 
-
-    const referenceShops = [
-      { 
-        id: "itoshima_01", 
-        name: "ビーチ食堂 Mr.BEACH", 
-        address: "糸島市前原中央2-1-21", 
-        tel: "092-321-3118",
-        food: "ガーリックシュリンプ(3尾)", 
-        qrCode: "BEACH_OPEN_2026",
-        location: { lat: 33.559868, lng: 130.198308 }, // 筑前前原駅付近
-        image: "https://images.unsplash.com/photo-1559740064-c6b367bd1918?w=400"
-      },
-      { 
-        id: "itoshima_02", 
-        name: "SHIMA", 
-        address: "糸島市前原中央3-20-19", 
-        tel: "092-324-4168",
-        food: "糸島野菜の天ぷら盛り", 
-        qrCode: "SHIMA_ITOSHIMA_WASHOKU",
-        location: { lat: 33.558334, lng: 130.194723 },
-        image: "https://images.unsplash.com/photo-1534422298391-e4f8c170db06?w=400"
-      },
-      { 
-        id: "itoshima_03", 
-        name: "レストラン ITOSHIMA", 
-        address: "糸島市泊647-2", 
-        tel: "092-322-4551",
-        food: "自家製生ハム盛り", 
-        qrCode: "RES_ITO_HAM_STAMP",
-        location: { lat: 33.582855, lng: 130.183305 },
-        image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400"
-      }
-    ];
-
-    let visitedShops = JSON.parse(localStorage.getItem('senbero_visited')) || [];
-    let map;
-
-    // Googleマップの初期化
-    function initMap() {
-      const itoshimaCenter = { lat: 33.5597, lng: 130.1973 };
-      map = new google.maps.Map(document.getElementById("map-canvas"), {
-        center: itoshimaCenter,
-        zoom: 13,
-        styles: myMapStyle,
-        disableDefaultUI: true,
-        zoomControl: true
-      });
-
-      referenceShops.forEach(shop => {
-        const marker = new google.maps.Marker({
-          position: shop.location,
-          map: map,
-          title: shop.name
-        });
-        marker.addListener("click", () => openDetail(shop.id));
-      });
-    }
-
-    function openMap() {
-      document.getElementById('map-container').style.display = 'flex';
-      // マップのリサイズイベントをトリガーして正しく表示させる
-      google.maps.event.trigger(map, "resize");
-    }
-
-    function closeMap() {
-      document.getElementById('map-container').style.display = 'none';
-    }
-
-    // --- その他スキャナー等の既存機能 (省略せず保持) ---
-    // (openScanner, handleQrResult, renderAppなどは前の回答と同じ)
-    async function openScanner() {
-      try {
-        document.getElementById('qr-modal').classList.remove('hidden');
-        const videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-        document.getElementById('video').srcObject = videoStream;
-        document.getElementById('video').play();
-        // ...スキャン処理...
-      } catch (err) { alert("カメラ起動失敗"); }
-    }
-
-    function closeScanner() {
-      document.getElementById('qr-modal').classList.add('hidden');
-      const stream = document.getElementById('video').srcObject;
-      if (stream) stream.getTracks().forEach(track => track.stop());
-    }
-
-    function openDetail(shopId) {
-      const shop = referenceShops.find(s => s.id === shopId);
-      if (!shop) return;
-      document.getElementById('detail-name').innerText = shop.name;
-      document.getElementById('detail-address').innerText = "📍 " + shop.address;
-      document.getElementById('detail-food').innerText = "🍴 " + shop.food;
-      document.getElementById('detail-tel-link').href = `tel:${shop.tel.replace(/-/g, '')}`;
-      document.getElementById('detail-image').style.backgroundImage = `url('${shop.image}')`;
-      document.getElementById('detail-modal').classList.remove('hidden');
-    }
-
-    function closeDetail() { document.getElementById('detail-modal').classList.add('hidden'); }
-
-    function renderApp() {
-      const app = document.getElementById('app');
-      app.innerHTML = `
-        <div class="max-w-2xl mx-auto p-6">
-          <header class="text-center mb-8">
-            <h1 class="text-4xl font-black text-[#ff6b6b] italic">糸島センベロ 2026</h1>
-          </header>
-          <div class="sticky top-4 z-50 mb-8 flex flex-col gap-3 items-center">
-            <button onclick="openScanner()" class="w-full max
+  <div id="detail-modal" class="hidden fixed inset-0 z-[2000] bg-black/6
