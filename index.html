@@ -55,8 +55,8 @@
         special: "おすすめドリンク1杯サービス", 
         qrCode: "MusicBarEn_1",
         description: "音楽とお酒を楽しめる心地よい空間。前原の夜を彩るミュージックバーです。",
-        // ご提示いただいた画像のURLを反映しました
-        image: "http://googleusercontent.com/image_generation_content/0"
+        // 修正：アップロードされた画像ファイル名を指定
+        image: "en.jpg" 
       },
       { 
         id: "itoshima_2", 
@@ -64,7 +64,7 @@
         address: "福岡県糸島市前原中央2-3-2", 
         special: "おつまみ1品サービス", 
         qrCode: "RoseNoir_2",
-        description: "アットホームな雰囲気で、地元の方に愛されるスナックです。楽しい夜を一緒に過ごしましょう。",
+        description: "アットホームな雰囲気で、地元の方に愛されるスナックです。",
         image: "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=400"
       },
       { 
@@ -126,15 +126,13 @@
       const shop = referenceShops.find(s => s.id === shopId);
       if (!shop) return;
       document.getElementById('detail-name').innerText = shop.name;
-      
       const addressLink = document.getElementById('detail-address-link');
       addressLink.innerText = "📍 " + shop.address;
-      
       const query = encodeURIComponent(shop.name + " " + shop.address);
       addressLink.href = "https://www.google.com/maps/search/?api=1&query=" + query;
-      
       document.getElementById('detail-special').innerText = shop.special;
       document.getElementById('detail-desc').innerText = shop.description;
+      // 修正：モーダルの背景画像にも反映
       document.getElementById('detail-image').style.backgroundImage = "url('" + shop.image + "')";
       document.getElementById('detail-modal').classList.remove('hidden');
     }
