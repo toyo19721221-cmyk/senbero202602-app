@@ -35,7 +35,11 @@
       <div id="detail-image" class="w-full h-48 bg-gray-200 bg-cover bg-center"></div>
       <div class="p-6">
         <h2 id="detail-name" class="text-2xl font-black mb-1"></h2>
-        <a id="detail-address-link" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-500 underline mb-4 block hover:text-blue-700 transition-colors"></a>
+        
+        <a id="detail-address-link" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-500 underline mb-2 block hover:text-blue-700"></a>
+        
+        <a id="detail-tel-link" class="text-sm text-green-600 font-bold mb-4 flex items-center gap-1"></a>
+        
         <div class="bg-orange-50 p-4 rounded-xl mb-4 border border-orange-100">
           <p class="text-xs font-bold text-orange-400 mb-1 uppercase">センベロ特典</p>
           <p id="detail-special" class="font-bold text-lg text-[#ff6b6b]"></p>
@@ -52,16 +56,17 @@
         id: "itoshima_1", 
         name: "music bar en ミュージックバー エン/縁", 
         address: "福岡県糸島市前原中央2-1-21", 
+        tel: "092-332-9011", // 電話番号を追加
         special: "おすすめドリンク1杯サービス", 
         qrCode: "MusicBarEn_1",
         description: "音楽とお酒を楽しめる心地よい空間。前原の夜を彩るミュージックバーです。",
-        // 修正：アップロードされた画像ファイル名を指定
         image: "en.jpg" 
       },
       { 
         id: "itoshima_2", 
         name: "スナック ローズノアール", 
         address: "福岡県糸島市前原中央2-3-2", 
+        tel: "092-324-1111", // ダミー番号。実際のものに書き換えてください
         special: "おつまみ1品サービス", 
         qrCode: "RoseNoir_2",
         description: "アットホームな雰囲気で、地元の方に愛されるスナックです。",
@@ -71,6 +76,7 @@
         id: "itoshima_3", 
         name: "CURRENT", 
         address: "福岡県糸島市志摩野北2290", 
+        tel: "092-330-5000", // ダミー番号
         special: "自家製ミニデザート", 
         qrCode: "Current_3",
         description: "野北海岸を見渡す絶景カフェ＆レストラン。",
@@ -126,13 +132,25 @@
       const shop = referenceShops.find(s => s.id === shopId);
       if (!shop) return;
       document.getElementById('detail-name').innerText = shop.name;
+      
+      // 住所
       const addressLink = document.getElementById('detail-address-link');
       addressLink.innerText = "📍 " + shop.address;
       const query = encodeURIComponent(shop.name + " " + shop.address);
       addressLink.href = "https://www.google.com/maps/search/?api=1&query=" + query;
+      
+      // 電話番号（追加箇所）
+      const telLink = document.getElementById('detail-tel-link');
+      if (shop.tel) {
+        telLink.innerText = "📞 " + shop.tel;
+        telLink.href = "tel:" + shop.tel.replace(/-/g, ''); // ハイフンを除去して架電用に設定
+        telLink.style.display = "flex";
+      } else {
+        telLink.style.display = "none";
+      }
+      
       document.getElementById('detail-special').innerText = shop.special;
       document.getElementById('detail-desc').innerText = shop.description;
-      // 修正：モーダルの背景画像にも反映
       document.getElementById('detail-image').style.backgroundImage = "url('" + shop.image + "')";
       document.getElementById('detail-modal').classList.remove('hidden');
     }
