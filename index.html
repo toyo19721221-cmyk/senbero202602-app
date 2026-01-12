@@ -24,7 +24,8 @@
     .scan-line { position: absolute; width: 100%; height: 3px; background: #ff6b6b; top: 0; left: 0; animation: scan 2s linear infinite; }
     @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
     .progress-glow { box-shadow: 0 4px 20px rgba(255, 107, 107, 0.15); }
-    .address-text { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+    /* 住所が長くても崩れないよう2行まで表示 */
+    .address-text { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   </style>
 </head>
 <body class="h-full bg-[#fff5e6] text-[#2d3436]">
@@ -93,45 +94,44 @@
       navigator.serviceWorker.register('sw.js').catch(() => {});
     }
 
-    // CSVの情報を基にした各店舗の個別データ
-    // ここに住所(addr)を追加すれば、トップ画面の表記が個別に変わります
+    // ★ ここを修正しました：各店舗の正確な住所を反映させてください
     const shopMaster = [
-      { name: "ITO GRAND", qr: "QR_1", addr: "糸島市前原中央2丁目", food: "特製おつまみ" },
-      { name: "糸島ラーメン だぁ〜家", qr: "QR_2", addr: "糸島市前原中央3丁目", food: "ミニラーメン" },
-      { name: "若武者", qr: "QR_3", addr: "糸島市前原中央", food: "焼き鳥セット" },
-      { name: "Klootch", qr: "QR_4", addr: "糸島市前原中央", food: "センベロドリンク" },
-      { name: "雅 MIYABI", qr: "QR_5", addr: "糸島市前原中央2丁目", food: "本日の一皿" },
-      { name: "Darts&Karaoke Bar BASE", qr: "QR_6", addr: "糸島市前原中央", food: "ナッツ盛り" },
-      { name: "焼肉辛麺よしまる", qr: "QR_7", addr: "糸島市前原中央", food: "ピリ辛おつまみ" },
-      { name: "ヒマある", qr: "QR_8", addr: "糸島市前原中央", food: "おすすめ小鉢" },
-      { name: "ワカムシャマエバル", qr: "QR_9", addr: "糸島市前原中央", food: "串盛り" },
-      { name: "宴Bar Y's style", qr: "QR_10", addr: "糸島市前原中央", food: "日替わりフード" },
-      { name: "ダーツバーchance", qr: "QR_11", addr: "糸島市前原中央", food: "おつまみセット" },
-      { name: "芋旦那", qr: "QR_12", addr: "糸島市前原中央", food: "熟成焼き芋" },
-      { name: "RE:LOAD", qr: "QR_13", addr: "糸島市前原中央", food: "オリジナルスナック" },
-      { name: "緑", qr: "QR_14", addr: "糸島市前原中央", food: "旬の酒菜" },
-      { name: "R.Garden", qr: "QR_15", addr: "糸島市前原中央", food: "ガーデンプレート" },
-      { name: "Golf&Bar Rosa Brillante", qr: "QR_16", addr: "糸島市前原中央", food: "ミックスナッツ" },
-      { name: "やきとり いと", qr: "QR_17", addr: "糸島市前原中央", food: "鳥皮ポン酢" },
-      { name: "レトロ酒場カラクリ", qr: "QR_18", addr: "糸島市前原中央", food: "昭和のおつまみ" },
-      { name: "two out", qr: "QR_19", addr: "糸島市前原中央", food: "バーフード" },
-      { name: "AIRU", qr: "QR_20", addr: "糸島市前原中央", food: "カクテルおつまみ" },
-      { name: "宴酒場ママん家", qr: "QR_21", addr: "糸島市前原中央", food: "おふくろの味" },
-      { name: "girl's dining bar MII", qr: "QR_22", addr: "糸島市前原中央", food: "ダイニングスナック" },
-      { name: "カラオケ ワイワイボックス", qr: "QR_23", addr: "糸島市前原中央", food: "揚げ物セット" },
-      { name: "Puchi-Rose", qr: "QR_24", addr: "糸島市前原中央", food: "ローズおつまみ" },
-      { name: "music bar en ミュージックバー エン/縁", qr: "QR_25", addr: "糸島市前原中央", food: "ミュージックおつまみ" }
+      { name: "ITO GRAND", qr: "QR_1", addr: "福岡県糸島市前原中央2丁目1-21", food: "特製おつまみ" },
+      { name: "糸島ラーメン だぁ〜家", qr: "QR_2", addr: "福岡県糸島市前原中央3丁目18-18", food: "ミニラーメン" },
+      { name: "若武者", qr: "QR_3", addr: "福岡県糸島市前原中央2丁目2-22", food: "焼き鳥セット" },
+      { name: "Klootch", qr: "QR_4", addr: "福岡県糸島市前原中央2丁目3-22", food: "センベロドリンク" },
+      { name: "雅 MIYABI", qr: "QR_5", addr: "福岡県糸島市前原中央2丁目3-43", food: "本日の一皿" },
+      { name: "Darts&Karaoke Bar BASE", qr: "QR_6", addr: "福岡県糸島市前原中央2丁目3-39", food: "ナッツ盛り" }, // 修正済み
+      { name: "焼肉辛麺よしまる", qr: "QR_7", addr: "福岡県糸島市前原中央2丁目3-42", food: "ピリ辛おつまみ" },
+      { name: "ヒマある", qr: "QR_8", addr: "福岡県糸島市前原中央2丁目", food: "おすすめ小鉢" },
+      { name: "ワカムシャマエバル", qr: "QR_9", addr: "福岡県糸島市前原中央2丁目", food: "串盛り" },
+      { name: "宴Bar Y's style", qr: "QR_10", addr: "福岡県糸島市前原中央2丁目", food: "日替わりフード" },
+      { name: "ダーツバーchance", qr: "QR_11", addr: "福岡県糸島市前原中央2丁目", food: "おつまみセット" },
+      { name: "芋旦那", qr: "QR_12", addr: "福岡県糸島市前原中央2丁目", food: "熟成焼き芋" },
+      { name: "RE:LOAD", qr: "QR_13", addr: "福岡県糸島市前原中央2丁目", food: "オリジナルスナック" },
+      { name: "緑", qr: "QR_14", addr: "福岡県糸島市前原中央2丁目", food: "旬の酒菜" },
+      { name: "R.Garden", qr: "QR_15", addr: "福岡県糸島市前原中央2丁目", food: "ガーデンプレート" },
+      { name: "Golf&Bar Rosa Brillante", qr: "QR_16", addr: "福岡県糸島市前原中央2丁目", food: "ミックスナッツ" },
+      { name: "やきとり いと", qr: "QR_17", addr: "福岡県糸島市前原中央2丁目", food: "鳥皮ポン酢" },
+      { name: "レトロ酒場カラクリ", qr: "QR_18", addr: "福岡県糸島市前原中央2丁目", food: "昭和のおつまみ" },
+      { name: "two out", qr: "QR_19", addr: "福岡県糸島市前原中央2丁目", food: "バーフード" },
+      { name: "AIRU", qr: "QR_20", addr: "福岡県糸島市前原中央2丁目", food: "カクテルおつまみ" },
+      { name: "宴酒場ママん家", qr: "QR_21", addr: "福岡県糸島市前原中央2丁目", food: "おふくろの味" },
+      { name: "girl's dining bar MII", qr: "QR_22", addr: "福岡県糸島市前原中央2丁目", food: "ダイニングスナック" },
+      { name: "カラオケ ワイワイボックス", qr: "QR_23", addr: "福岡県糸島市前原中央2丁目", food: "揚げ物セット" },
+      { name: "Puchi-Rose", qr: "QR_24", addr: "福岡県糸島市前原中央2丁目", food: "ローズおつまみ" },
+      { name: "music bar en ミュージックバー エン/縁", qr: "QR_25", addr: "福岡県糸島市前原中央2丁目", food: "ミュージックおつまみ" }
     ];
 
     const referenceShops = shopMaster.map((shop, i) => ({
       id: `shop_${i + 1}`,
       name: shop.name,
-      address: shop.addr, // ここがトップ画面に表示されます
+      address: shop.addr, 
       tel: "092-000-0000",
       food: shop.food,
       qrCode: shop.qr,
       description: `${shop.name}です。糸島の夜を楽しむ自慢の逸品をご賞味ください！`,
-      mapUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shop.name + " 糸島")}`,
+      mapUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shop.name + " " + shop.addr)}`,
       image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400"
     }));
 
@@ -220,7 +220,7 @@
       const isVisited = visitedShops.some(v => v.shop_id === shop.id);
       document.getElementById('detail-visited-badge').className = isVisited ? 'mb-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full w-fit' : 'hidden';
       document.getElementById('detail-name').innerText = shop.name;
-      document.getElementById('detail-address-link').innerText = "📍 地図を表示する";
+      document.getElementById('detail-address-link').innerText = "📍 " + shop.address;
       document.getElementById('detail-address-link').href = shop.mapUrl;
       document.getElementById('detail-tel-link').href = "tel:" + shop.tel.replace(/-/g, '');
       document.getElementById('detail-food').innerText = shop.food;
