@@ -33,16 +33,13 @@
   <div id="pwa-modal" class="hidden fixed inset-0 z-[5000] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm" onclick="closePwaModal()">
     <div class="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl text-center" onclick="event.stopPropagation()">
       <h2 class="text-xl font-black mb-4">ホーム画面に追加して<br>データを保護しましょう</h2>
-      
       <div id="ios-guide" class="hidden text-left space-y-4">
         <p class="text-sm">iPhoneをご利用の方：</p>
         <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-xs leading-relaxed">
-          1. ブラウザ下部の「共有ボタン（<span class="inline-block border p-0.5 rounded">↑</span>）」をタップ<br>
-          2. メニューを下にスクロール<br>
-          3. 「ホーム画面に追加」を選択
+          1. ブラウザ下部の「共有ボタン（↑）」をタップ<br>
+          2. メニューから「ホーム画面に追加」を選択
         </div>
       </div>
-
       <div id="android-guide" class="hidden text-left space-y-4">
         <p class="text-sm">Androidをご利用の方：</p>
         <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-xs leading-relaxed">
@@ -50,7 +47,6 @@
           2. 「アプリをインストール」または「ホーム画面に追加」を選択
         </div>
       </div>
-
       <button onclick="closePwaModal()" class="w-full mt-6 bg-blue-600 text-white py-4 rounded-2xl font-bold">了解しました</button>
     </div>
   </div>
@@ -58,208 +54,4 @@
   <div id="qr-modal" class="hidden fixed inset-0 z-[3000] bg-black/90 flex flex-col items-center justify-center p-6 text-white">
     <div id="video-container" class="mb-6"><video id="video" playsinline></video><div class="scan-line"></div></div>
     <p class="mb-4 font-bold text-lg text-center">QRコードを読み込んでください</p>
-    <button onclick="closeScanner()" class="bg-white text-black px-12 py-3 rounded-full font-bold">キャンセル</button>
-    <canvas id="canvas" hidden></canvas>
-  </div>
-
-  <div id="guide-modal" class="hidden fixed inset-0 z-[4000] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeGuide()">
-    <div class="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl" onclick="event.stopPropagation()">
-      <h2 class="text-2xl font-black text-[#ff6b6b] mb-6 text-center">楽しみ方ガイド</h2>
-      <div class="space-y-4 text-sm leading-relaxed text-left">
-        <p>1. 加盟店でセンベロを注文！</p>
-        <p>2. 店内の専用QRをスキャンしてスタンプ獲得！</p>
-        <p>3. 全25店舗制覇して特典をGETしましょう。</p>
-      </div>
-      <button onclick="closeGuide()" class="w-full mt-8 bg-[#ff6b6b] text-white py-4 rounded-2xl font-bold shadow-lg">閉じる</button>
-    </div>
-  </div>
-
-  <div id="detail-modal" class="hidden fixed inset-0 z-[2000] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeDetail()">
-    <div class="bg-white w-full max-w-sm max-h-[90vh] rounded-3xl overflow-y-auto shadow-2xl" onclick="event.stopPropagation()">
-      <div id="detail-image" class="w-full h-48 bg-gray-200 bg-cover bg-center shrink-0"></div>
-      <div class="p-6 text-left">
-        <div id="detail-visited-badge" class="hidden mb-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full w-fit">✓ 来店済み</div>
-        <h2 id="detail-name" class="text-2xl font-black mb-1 leading-tight"></h2>
-        <a id="detail-address-link" target="_blank" rel="noopener noreferrer" class="text-sm text-blue-500 underline mb-4 block break-all"></a>
-        <a id="detail-tel-link" class="w-full bg-green-500 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 mb-4"><span>📞</span> お店に電話</a>
-        <div class="bg-orange-50 p-4 rounded-xl mb-4 border border-orange-100">
-          <p class="text-[10px] font-bold text-orange-400 mb-1 uppercase tracking-widest flex items-center gap-1"><span>🍴</span> フード</p>
-          <p id="detail-food" class="font-bold text-lg text-[#ff6b6b] leading-tight"></p>
-        </div>
-        <p id="detail-desc" class="text-sm leading-relaxed mb-6 text-gray-600"></p>
-        <button onclick="closeDetail()" class="w-full bg-gray-100 py-4 rounded-2xl font-bold text-gray-500">閉じる</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
-    }
-
-    const shopNames = ["ITO GRAND", "糸島ラーメン だぁ〜家", "若武者", "Klootch", "雅 MIYABI", "Darts&Karaoke Bar BASE", "焼肉辛麺よしまる", "ヒマある", "ワカムシャマエバル", "宴Bar Y's style", "ダーツバーchance", "芋旦那", "RE:LOAD", "緑", "R.Garden", "Golf&Bar Rosa Brillante", "やきとり いと", "レトロ酒場カラクリ", "two out", "AIRU", "宴酒場ママん家", "girl's dining bar MII", "カラオケ ワイワイボックス", "Puchi-Rose", "music bar en ミュージックバー エン/縁"];
-
-    const referenceShops = shopNames.map((name, i) => ({
-      id: `shop_${i + 1}`,
-      name: name,
-      address: "福岡県糸島市前原中央近辺",
-      tel: "092-000-0000",
-      food: "センベロセット限定フード",
-      qrCode: `QR_${i + 1}`,
-      description: `${name}です。糸島の夜を楽しむ自慢の逸品をご賞味ください！`,
-      image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400"
-    }));
-
-    let visitedShops = JSON.parse(localStorage.getItem('senbero_visited')) || [];
-    let videoStream = null;
-
-    function renderApp() {
-      const visitedCount = visitedShops.length;
-      const progressPercent = (visitedCount / referenceShops.length) * 100;
-      const app = document.getElementById('app');
-      
-      let shopListHtml = referenceShops.map(shop => {
-        const isVisited = visitedShops.some(v => v.shop_id === shop.id);
-        return `
-          <div onclick="openDetail('${shop.id}')" class="shop-card bg-white p-3 rounded-[1.8rem] shadow-md border-4 ${isVisited ? 'border-[#ff6b6b]' : 'border-white'} relative text-left h-full">
-            <div class="flex items-center gap-3">
-              <div class="w-14 h-14 rounded-xl bg-gray-100 bg-cover bg-center shrink-0" style="background-image:url('${shop.image}')"></div>
-              <div class="flex-1 overflow-hidden">
-                <div class="flex justify-between items-start gap-1">
-                  <h3 class="font-black text-[13px] leading-tight truncate flex-1">${shop.name}</h3>
-                  ${isVisited ? '<span class="text-[#ff6b6b] font-bold text-[8px] bg-red-50 px-1 py-0.5 rounded">✓</span>' : ''}
-                </div>
-                <p class="text-[9px] text-gray-400 address-text leading-tight mt-0.5">${shop.address}</p>
-                <div class="mt-1">
-                  <p class="text-[8px] text-orange-400 font-bold uppercase flex items-center gap-1"><span>🍴</span> フード</p>
-                  <p class="text-[10px] font-bold text-[#ff6b6b] truncate">${shop.food}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      app.innerHTML = `
-        <div class="max-w-3xl mx-auto p-4">
-          <button onclick="openPwaModal()" class="w-full bg-blue-600 text-white p-4 rounded-2xl mb-6 text-[11px] font-bold flex justify-center items-center shadow-lg active:scale-95 transition-transform">
-            <span>📱 ここをタップしてホーム画面に追加（推奨）</span>
-          </button>
-
-          <header class="text-center my-6">
-            <h1 class="text-3xl font-black text-[#ff6b6b] tracking-tighter">糸島センベロ 2026</h1>
-          </header>
-          
-          <div class="sticky top-4 z-[1000] bg-white/95 backdrop-blur-md p-5 rounded-[2rem] shadow-xl border border-white mb-8 progress-glow">
-            <div class="flex justify-between items-center mb-2 px-1">
-              <p class="text-xs font-bold text-gray-400">スタンプ達成度</p>
-              <p class="text-xl font-black text-[#ff6b6b]">${visitedCount}<span class="text-sm text-gray-300"> / ${referenceShops.length}</span></p>
-            </div>
-            <div class="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
-              <div class="h-full bg-[#ff6b6b] transition-all duration-1000" style="width:${progressPercent}%"></div>
-            </div>
-          </div>
-
-          <div class="flex justify-center gap-3 mb-8">
-            <button onclick="openGuide()" class="flex-1 bg-white text-gray-400 font-bold py-4 rounded-2xl shadow-sm border border-gray-100 text-sm">❓ 使い方</button>
-            <button onclick="openScanner()" class="flex-[3] bg-[#ff6b6b] text-white font-bold py-4 rounded-2xl shadow-lg flex items-center justify-center gap-2">📸 QRコード読み込み</button>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            ${shopListHtml}
-          </div>
-
-          ${visitedCount === referenceShops.length ? `
-            <div class="bg-gradient-to-br from-yellow-400 to-orange-500 p-8 rounded-[2.5rem] text-white text-center shadow-xl mt-10">
-              <p class="font-black text-2xl uppercase tracking-widest">Complete!</p>
-            </div>
-          ` : ''}
-        </div>
-      `;
-    }
-
-    // PWAガイド表示
-    function openPwaModal() {
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-      document.getElementById('ios-guide').classList.toggle('hidden', !isIOS);
-      document.getElementById('android-guide').classList.toggle('hidden', isIOS);
-      document.getElementById('pwa-modal').classList.remove('hidden');
-    }
-    function closePwaModal() { document.getElementById('pwa-modal').classList.add('hidden'); }
-
-    // モーダル制御
-    function openGuide() { document.getElementById('guide-modal').classList.remove('hidden'); }
-    function closeGuide() { document.getElementById('guide-modal').classList.add('hidden'); }
-    function closeDetail() { document.getElementById('detail-modal').classList.add('hidden'); }
-
-    function openDetail(shopId) {
-      const shop = referenceShops.find(s => s.id === shopId);
-      if (!shop) return;
-      const isVisited = visitedShops.some(v => v.shop_id === shop.id);
-      document.getElementById('detail-visited-badge').className = isVisited ? 'mb-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full w-fit' : 'hidden';
-      document.getElementById('detail-name').innerText = shop.name;
-      document.getElementById('detail-address-link').innerText = "📍 " + shop.address;
-      document.getElementById('detail-address-link').href = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(shop.name + " " + shop.address);
-      document.getElementById('detail-tel-link').href = "tel:" + shop.tel.replace(/-/g, '');
-      document.getElementById('detail-food').innerText = shop.food;
-      document.getElementById('detail-desc').innerText = shop.description;
-      document.getElementById('detail-image').style.backgroundImage = `url('${shop.image}')`;
-      document.getElementById('detail-modal').classList.remove('hidden');
-    }
-
-    async function openScanner() {
-      const modal = document.getElementById('qr-modal');
-      modal.classList.remove('hidden');
-      try {
-        videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-        const video = document.getElementById('video');
-        video.srcObject = videoStream;
-        video.setAttribute("playsinline", true);
-        video.play();
-        requestAnimationFrame(tick);
-      } catch (err) {
-        alert("カメラの起動に失敗しました。設定を確認してください。");
-        closeScanner();
-      }
-    }
-
-    function closeScanner() {
-      document.getElementById('qr-modal').classList.add('hidden');
-      if (videoStream) {
-        videoStream.getTracks().forEach(track => track.stop());
-        videoStream = null;
-      }
-    }
-
-    function tick() {
-      const video = document.getElementById('video');
-      const canvasElement = document.getElementById('canvas');
-      const canvas = canvasElement.getContext('2d', { willReadFrequently: true });
-      if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        canvasElement.height = video.videoHeight;
-        canvasElement.width = video.videoWidth;
-        canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
-        const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
-        const code = jsQR(imageData.data, canvasElement.width, canvasElement.height);
-        if (code) {
-          const shop = referenceShops.find(s => s.qrCode === code.data);
-          if (shop && !visitedShops.some(v => v.shop_id === shop.id)) {
-            visitedShops.push({ shop_id: shop.id });
-            localStorage.setItem('senbero_visited', JSON.stringify(visitedShops));
-            if (window.confetti) confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-            renderApp();
-            alert(`${shop.name}のスタンプを獲得しました！`);
-            closeScanner();
-            return;
-          }
-        }
-      }
-      if (!document.getElementById('qr-modal').classList.contains('hidden')) {
-        requestAnimationFrame(tick);
-      }
-    }
-
-    renderApp();
-  </script>
-</body>
-</html>
+    <button onclick="closeScanner()"
