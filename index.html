@@ -30,6 +30,31 @@
 <body class="h-full bg-[#fff5e6] text-[#2d3436]">
   <div id="app" class="w-full h-full overflow-auto pb-12"></div>
 
+  <div id="pwa-modal" class="hidden fixed inset-0 z-[5000] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm" onclick="closePwaModal()">
+    <div class="bg-white w-full max-w-sm rounded-3xl p-8 shadow-2xl text-center" onclick="event.stopPropagation()">
+      <h2 class="text-xl font-black mb-4">ホーム画面に追加して<br>データを保護しましょう</h2>
+      
+      <div id="ios-guide" class="hidden text-left space-y-4">
+        <p class="text-sm">iPhoneをご利用の方：</p>
+        <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-xs leading-relaxed">
+          1. ブラウザ下部の「共有ボタン（<span class="inline-block border p-0.5 rounded">↑</span>）」をタップ<br>
+          2. メニューを下にスクロール<br>
+          3. 「ホーム画面に追加」を選択
+        </div>
+      </div>
+
+      <div id="android-guide" class="hidden text-left space-y-4">
+        <p class="text-sm">Androidをご利用の方：</p>
+        <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-xs leading-relaxed">
+          1. 右上のメニュー（︙）をタップ<br>
+          2. 「アプリをインストール」または「ホーム画面に追加」を選択
+        </div>
+      </div>
+
+      <button onclick="closePwaModal()" class="w-full mt-6 bg-blue-600 text-white py-4 rounded-2xl font-bold">了解しました</button>
+    </div>
+  </div>
+
   <div id="qr-modal" class="hidden fixed inset-0 z-[3000] bg-black/90 flex flex-col items-center justify-center p-6 text-white">
     <div id="video-container" class="mb-6"><video id="video" playsinline></video><div class="scan-line"></div></div>
     <p class="mb-4 font-bold text-lg text-center">QRコードを読み込んでください</p>
@@ -68,7 +93,6 @@
   </div>
 
   <script>
-    // PWAサービスワーカー登録
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(() => {});
     }
@@ -118,9 +142,9 @@
 
       app.innerHTML = `
         <div class="max-w-3xl mx-auto p-4">
-          <div class="bg-blue-600 text-white p-3 rounded-2xl mb-6 text-[10px] font-bold flex justify-center items-center shadow-lg">
-            <span>📱 ホーム画面に追加するとデータが保護されます</span>
-          </div>
+          <button onclick="openPwaModal()" class="w-full bg-blue-600 text-white p-4 rounded-2xl mb-6 text-[11px] font-bold flex justify-center items-center shadow-lg active:scale-95 transition-transform">
+            <span>📱 ここをタップしてホーム画面に追加（推奨）</span>
+          </button>
 
           <header class="text-center my-6">
             <h1 class="text-3xl font-black text-[#ff6b6b] tracking-tighter">糸島センベロ 2026</h1>
@@ -148,13 +172,22 @@
           ${visitedCount === referenceShops.length ? `
             <div class="bg-gradient-to-br from-yellow-400 to-orange-500 p-8 rounded-[2.5rem] text-white text-center shadow-xl mt-10">
               <p class="font-black text-2xl uppercase tracking-widest">Complete!</p>
-              <p class="mt-4 text-sm font-bold opacity-90 italic">You are Itoshima Master!</p>
             </div>
           ` : ''}
         </div>
       `;
     }
 
+    // PWAガイド表示
+    function openPwaModal() {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      document.getElementById('ios-guide').classList.toggle('hidden', !isIOS);
+      document.getElementById('android-guide').classList.toggle('hidden', isIOS);
+      document.getElementById('pwa-modal').classList.remove('hidden');
+    }
+    function closePwaModal() { document.getElementById('pwa-modal').classList.add('hidden'); }
+
+    // モーダル制御
     function openGuide() { document.getElementById('guide-modal').classList.remove('hidden'); }
     function closeGuide() { document.getElementById('guide-modal').classList.add('hidden'); }
     function closeDetail() { document.getElementById('detail-modal').classList.add('hidden'); }
@@ -226,7 +259,6 @@
       }
     }
 
-    // 初回実行
     renderApp();
   </script>
 </body>
