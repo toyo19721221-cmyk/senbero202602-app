@@ -1,0 +1,15 @@
+{
+  "name": "糸島センベロ 2026",
+  "short_name": "糸島センベロ",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#fff5e6",
+  "theme_color": "#ff6b6b",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1161/1161684.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
